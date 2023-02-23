@@ -1,0 +1,10 @@
+{
+    "need_commit": "Empty",
+    "door": [],
+    "controller": {
+        "throughput": "10mbit",
+        "latency": "50usec"
+    },
+    "device": [],
+    "image": []
+}
