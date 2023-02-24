@@ -2,7 +2,7 @@
 import fileinput, os, sys
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 from config import get_conf
 from door.proto import *
@@ -13,22 +13,18 @@ class DoorControllerClient:
 	def __init__(self, door):
 		self.controller = DoorController(door)
 		self.controller.connect()
+		self.help = len(DOOR_COMMANDS)
+		self.quit = len(DOOR_COMMANDS)+1
 
 	def __del__(self):
 		del self.controller
 
 	def print_help(self):
 		print("Enter one of the following numbers:")
-		print("\t- 0 - QUIT")
-		print("\t- 1 - CMD_DOOR_FIREWALL_UP")
-		print("\t- 2 - CMD_DOOR_FIREWALL_DOWN")
-		print("\t- 3 - CMD_DOOR_WG_KEYGEN")
-		print("\t- 4 - CMD_DOOR_WG_UP")
-		print("\t- 5 - CMD_DOOR_WG_DOWN")
-		print("\t- 6 - CMD_DOOR_WG_GEN_CONF")
-		print("\t- 7 - CMD_DOOR_TRAFFIC_SHAPER_UP")
-		print("\t- 8 - CMD_DOOR_TRAFFIC_SHAPER_DOWN")
-		print("\t- 9 - HELP")
+		for key in DOOR_COMMANDS:
+			print("\t-  "+str(DOOR_COMMANDS[key])+" - "+str(key))
+		print("\t-  "+str(self.help)+" - HELP")
+		print("\t- "+str(self.quit)+" - QUIT")
 
 	def execute(self, cmd):
 		if cmd == CMD_DOOR_FIREWALL_UP:
@@ -55,9 +51,9 @@ class DoorControllerClient:
 
 		for line in fileinput.input():
 			cmd = int(line)
-			if cmd == 9:
+			if cmd == self.help:
 				self.print_help()
-			elif cmd == 0:
+			elif cmd == self.quit:
 				print("QUIT")
 				break
 			else:

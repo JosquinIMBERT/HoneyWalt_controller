@@ -2,7 +2,7 @@
 import fileinput, os, sys
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 from config import get_conf
 from utils.files import *
@@ -13,32 +13,25 @@ class VMControllerClient:
 	def __init__(self):
 		self.controller = VMController()
 		self.controller.connect()
+		self.help = len(VM_COMMANDS)
+		self.quit = len(VM_COMMANDS)+1
 
 	def __del__(self):
 		del self.controller
 
 	def print_help(self):
 		print("Enter one of the following numbers:")
-		print("\t-  0 - QUIT")
-		print("\t-  1 - CMD_VM_PHASE")
-		print("\t-  2 - CMD_VM_WALT_ADD_DEV")
-		print("\t-  3 - CMD_VM_WALT_DEV_IP")
-		print("\t-  4 - CMD_VM_WG_KEYGEN")
-		print("\t-  5 - CMD_VM_WG_DOORS")
-		print("\t-  6 - CMD_VM_WG_DEL_CONF")
-		print("\t-  7 - CMD_VM_WG_UP")
-		print("\t-  8 - CMD_VM_WG_DOWN")
-		print("\t-  9 - CMD_VM_COMMIT")
-		print("\t- 10 - CMD_VM_SHUTDOWN")
-		print("\t- 11 - CMD_VM_LIVE")
-		print("\t- 12 - HELP")
+		for key in VM_COMMANDS:
+			print("\t-  "+str(VM_COMMANDS[key])+" - "+str(key))
+		print("\t- "+str(self.help)+" - HELP")
+		print("\t- "+str(self.quit)+" - QUIT")
 
 	def execute(self, cmd):
 		if cmd == CMD_VM_PHASE:
 			print("Enter phase > ")
 			phase = int(fileinput.input())
 			print(self.controller.send_phase(phase))
-		elif cmd == CMD_VM_WALT_ADD_DEV:
+		elif cmd == CMD_VM_WALT_DEVS:
 			# Get info
 			print("Enter name > ")
 			name = fileinput.input()
@@ -54,7 +47,7 @@ class VMControllerClient:
 			dev = {"name":name, "image":image, "username":username, "password":password, "mac":mac}
 			# Send
 			print(self.controller.send_device())
-		elif cmd == CMD_VM_WALT_DEV_IP:
+		elif cmd == CMD_VM_WALT_IPS:
 			print(self.controller.get_ips())
 		elif cmd == CMD_VM_WG_KEYGEN:
 			print(self.controller.wg_keygen())
@@ -74,8 +67,6 @@ class VMControllerClient:
 				else:
 					break
 			print(self.controller.send_doors(doors))
-		elif cmd == CMD_VM_WG_DEL_CONF:
-			print(self.controller.wg_del_conf())
 		elif cmd == CMD_VM_WG_UP:
 			print(self.controller.wg_up())
 		elif cmd == CMD_VM_WG_DOWN:
@@ -94,9 +85,9 @@ class VMControllerClient:
 
 		for line in fileinput.input():
 			cmd = int(line)
-			if cmd == 12:
+			if cmd == self.help:
 				self.print_help()
-			elif cmd == 0:
+			elif cmd == self.quit:
 				print("QUIT")
 				break
 			else:
@@ -104,7 +95,7 @@ class VMControllerClient:
 
 def main():
 	glob.init(None, get_conf(), to_root_path("var/key/id_olim"), to_root_path("var/key/id_olim.pub"), to_root_path("var/key/id_door"), to_root_path("var/key/id_door.pub"))
-	cli = VMControllerClient({"ip":"127.0.0.1", "port":9999})
+	cli = VMControllerClient()
 	cli.run()
 
 if __name__ == '__main__':

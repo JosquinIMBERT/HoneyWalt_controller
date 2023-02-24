@@ -2,7 +2,7 @@
 import os, pickle, socket, sys
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.logs import *
 
 # CONSTANTS
@@ -44,13 +44,22 @@ class ProtoSocket:
 		else:
 			self.socket.send(cmd_to_bytes(cmd))
 
+	# Send a command (should be on COMMAND_SIZE bytes)
+	def recv_cmd(self):
+		if not self.connected():
+			log(ERROR, self.name()+".recv_cmd: Failed to send a command. The socket is not connected")
+			return None
+		else:
+			return bytes_to_cmd(self.socket.recv(COMMAND_SIZE))
+
 	# Send one byte to 1
 	def send_confirm(self):
 		self.send(to_nb_bytes(1, 1))
 
 	# Send one byte to 0
-	def send_fail(self):
+	def send_fail(self, msg=""):
 		self.send(to_nb_bytes(0, 1))
+		self.send_obj(msg)
 
 	# Wait for one byte, return True if the byte is 1
 	def wait_confirm(self, timeout=30):

@@ -2,7 +2,7 @@
 import json, os, requests, sys
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.files import *
 
 # Find an object in the "objects" list with field "field" equal "target"

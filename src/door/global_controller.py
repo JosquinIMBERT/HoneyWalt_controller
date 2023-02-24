@@ -2,7 +2,7 @@
 import os, sys
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from door.controller import DoorController
 
 class DoorGlobalController:
@@ -14,6 +14,10 @@ class DoorGlobalController:
 	def __del__(self):
 		for controller in self.controllers:
 			del controller
+
+	def start(self):
+		for controller in self.controllers:
+			controller.connect()
 
 	def firewall_up(self):
 		for controller in self.controllers:

@@ -4,7 +4,7 @@ from os.path import exists
 from string import Template
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.logs import *
 
 # Kill a process using the file "filename"
@@ -38,34 +38,8 @@ def run(command, error, output=False, timeout=None):
 	else:
 		return None
 
-
-# def door_run(door, cmd, err="", output=False, background=False):
-# 	back = " &" if background else ""
-# 	ssh_temp = Template("ssh root@${ip} -i ${keypath} -p ${port} \"${command}\""+back)
-
-# 	ssh_cmd = ssh_temp.substitute({
-# 		"ip": door["host"],
-# 		"keypath": glob.DOOR_PRIV_KEY,
-# 		"port": door["realssh"],
-# 		"command": cmd
-# 	})
-
-# 	return run(ssh_cmd, error=err, output=output)
-
-
-# def vm_run(cmd, err="", output=False, timeout=None):
-# 	ssh_temp = Template("ssh root@${ip} -i ${keypath} -p ${port} \"${command}\"")
-
-# 	ssh_cmd = ssh_temp.substitute({
-# 		"ip": glob.VM_IP,
-# 		"keypath": glob.VM_PRIV_KEY,
-# 		"port": 22,
-# 		"command": cmd
-# 	})
-
-# 	return run(ssh_cmd, error=err, output=output, timeout=timeout)
-
 # Source: https://github.com/giampaolo/psutil/blob/5ba055a8e514698058589d3b615d408767a6e330/psutil/_psposix.py#L28-L53
+# Check whether a PID corresponds to a running process (kill 0 allows to test the PID without killing any process)
 def pid_exists(pid):
 	if pid == 0:
 		return True
@@ -81,7 +55,8 @@ def pid_exists(pid):
 	else:
 		return True
 
-def is_pid(file):
+# Read a PID from a file and return it as a string if it exists
+def read_pid_file(file):
 	if exists(file):
 		with open(file, "r") as pidfile:
 			pid = pidfile.read().strip()

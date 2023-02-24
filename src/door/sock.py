@@ -2,7 +2,8 @@
 import os, socket, sys, time
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
+from utils.logs import *
 from utils.sockets import ProtoSocket
 
 class DoorSocket(ProtoSocket):

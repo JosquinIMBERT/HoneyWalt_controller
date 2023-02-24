@@ -2,7 +2,7 @@
 import os, sys
 
 # Internal
-sys.path.insert(0, os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/"))
+sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from door.proto import *
 from door.sock import DoorSocket
 from utils.misc import get_public_ip
