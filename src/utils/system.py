@@ -4,7 +4,6 @@ from os.path import exists
 from string import Template
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.logs import *
 
 # Kill a process using the file "filename"

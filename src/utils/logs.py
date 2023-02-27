@@ -1,13 +1,14 @@
 # External
 import os, sys, traceback
 
-global LOG_LEVEL, COMMAND, DEBUG, INFO, WARNING, ERROR
-LOG_LEVEL = 0
-COMMAND = 4
-DEBUG = 3
-INFO = 2
-WARNING = 1
-ERROR = 0
+global LOG_LEVEL, COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL
+LOG_LEVEL = 1
+COMMAND = 5
+DEBUG = 4
+INFO = 3
+WARNING = 2
+ERROR = 1
+FATAL = 0
 
 def get_trace(start_func="main", nb_off=2):
 	calls = []
@@ -20,16 +21,18 @@ def get_trace(start_func="main", nb_off=2):
 	calls = ">".join(calls[:-nb_off])
 	return calls
 
-# Print an error and exit
-def eprint(*args, exit=True, **kwargs):
-    log(ERROR, *args, **kwargs)
-    if exit:
-    	sys.exit(1)
+# Print a fatal error and exit
+def eprint(*args, **kwargs):
+    log(FATAL, *args, **kwargs)
+    sys.exit(1)
 
 def log(level, *args, **kwargs):
 	if level <= LOG_LEVEL:
-		if level == ERROR:
-			trace = get_trace(nb_off=3)+":"
+		if level == FATAL:
+			#trace = get_trace(nb_off=3)+":"
+			print("[FATAL]", *args, file=sys.stderr, **kwargs)
+		elif level == ERROR:
+			#trace = get_trace(nb_off=3)+":"
 			print("[ERROR]", trace, *args, file=sys.stderr, **kwargs)
 		elif level == WARNING:
 			trace = get_trace()+":"
@@ -44,7 +47,9 @@ def log(level, *args, **kwargs):
 def set_log_level(log_level):
 	global LOG_LEVEL
 
-	if log_level=="ERROR":
+	if log_level=="FATAL":
+		LOG_LEVEL = FATAL
+	elif log_level=="ERROR":
 		LOG_LEVEL = ERROR
 	elif log_level=="WARNING":
 		LOG_LEVEL = WARNING

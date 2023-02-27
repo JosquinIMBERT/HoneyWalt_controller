@@ -2,11 +2,11 @@
 import os, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from client.proto import *
 from client.sock import ClientSocket
+from utils.controller import Controller
 
-class ClientController:
+class ClientController(Controller):
 	def __init__(self):
 		self.socket = ClientSocket()
 		self.keep_running = True
@@ -23,20 +23,6 @@ class ClientController:
 			while self.keep_running:
 				cmd = self.socket.recv_cmd()
 				self.execute(cmd)
-
-	# Func result is a dictionary with the following keys:
-	#	"success" (mandatory): boolean that indicates whether the function succeeded or not
-	#	"answer" (optional): answer object in case of success
-	#	"msg" (optional): error message in case of fail
-	def exec(self, func, *args, **kwargs):
-		res = func(*args, **kwargs)
-		if res["success"]:
-			self.socket.send_confirm()
-			if "answer" in res:
-				self.socket.send_obj(res["answer"])
-		else:
-			res["msg"] = res["msg"] if "msg" in res else ""
-			self.socket.send_fail(msg=res["msg"])
 
 	def execute(self, cmd):
 		if cmd == CMD_CLIENT_DOOR:

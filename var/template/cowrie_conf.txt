@@ -1,0 +1,24 @@
+[honeypot]
+backend = proxy
+download_path = $download_path
+auth_class = UserDB
+
+[ssh]
+listen_endpoints = tcp:$listen_port:interface=0.0.0.0
+
+[proxy]
+backend = simple
+backend_ssh_host = $backend_host
+backend_ssh_port = $backend_port
+backend_user = $backend_user
+backend_pass = $backend_pass
+
+[output_jsonlog]
+enabled = true
+logfile = $logfile
+epoch_timestamp = false
+
+#[output_socketlog]
+#enabled = true
+#address = 127.0.0.1:$socket_port
+#timeout = 5

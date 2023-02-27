@@ -2,7 +2,6 @@
 import os, pickle, socket, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.logs import *
 
 # CONSTANTS
@@ -29,10 +28,10 @@ class ProtoSocket:
 			self.socket.send(serialize(obj))
 
 	# Receive an object (object size on OBJECT_SIZE bytes followed by the object on the corresponding amount of bytes)
-	def recv_obj(self):
-		bytlen = self.recv(size=OBJECT_SIZE)
+	def recv_obj(self, timeout=30):
+		bytlen = self.recv(size=OBJECT_SIZE, timeout=timeout)
 		if bytlen is not None:
-			bytobj = self.recv(size=from_bytes(bytlen, 'big'))
+			bytobj = self.recv(size=from_bytes(bytlen, 'big'), timeout=timeout)
 			if bytobj is not None:
 				return deserialize(bytobj)
 		return None
@@ -44,7 +43,7 @@ class ProtoSocket:
 		else:
 			self.socket.send(cmd_to_bytes(cmd))
 
-	# Send a command (should be on COMMAND_SIZE bytes)
+	# Receive a command (should be on COMMAND_SIZE bytes)
 	def recv_cmd(self):
 		if not self.connected():
 			log(ERROR, self.name()+".recv_cmd: Failed to send a command. The socket is not connected")
@@ -52,19 +51,38 @@ class ProtoSocket:
 		else:
 			return bytes_to_cmd(self.socket.recv(COMMAND_SIZE))
 
-	# Send one byte to 1
-	def send_confirm(self):
-		self.send(to_nb_bytes(1, 1))
+	# get_answer
+	# Print the warnings, errors and fatal errors, get the answer
+	# Return:
+	#	- True if it is a success but their is no answer data
+	#	- Answer (any kind of object) if it is a success and their is an answer data
+	#	- False if it did not succeed
+	def get_answer(self, timeout=30):
+		res = self.recv_obj(timeout=30)
+		if not res or not isinstance(res, dict) or not "success" in res: 
+			log(ERROR, self.name()+".wait_answer: received an invalid answer")
+			return False
+		else:
+			# Logging warnings, errors, and fatal errors
+			if "warning" in res and isinstance(res["warning"], list):
+				for warn in res["warning"]:
+					log(WARNING, warn)
+			if "error" in res and isinstance(res["error"], list):
+				for error in res["error"]:
+					log(ERROR, error)
+			if "fatal" in res and isinstance(res["fatal"], list):
+				for fatal in res["fatal"]:
+					log(FATAL, fatal)
+				sys.exit(1)
 
-	# Send one byte to 0
-	def send_fail(self, msg=""):
-		self.send(to_nb_bytes(0, 1))
-		self.send_obj(msg)
-
-	# Wait for one byte, return True if the byte is 1
-	def wait_confirm(self, timeout=30):
-		res = self.recv(size=1, timeout=timeout)
-		return res == to_nb_bytes(1, 1)
+			# Checking success
+			if res["success"]:
+				if "answer" in res:
+					return res["answer"]
+				else:
+					return True
+			else:
+				return False
 
 	# Send data to the socket
 	def send(self, bytes_msg):

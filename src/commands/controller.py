@@ -2,7 +2,6 @@
 import os, re, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 
 

@@ -2,12 +2,12 @@
 import os, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from door.proto import *
 from door.sock import DoorSocket
+from utils.controller import Controller
 from utils.misc import get_public_ip
 
-class DoorController:
+class DoorController(Controller):
 	def __init__(self, door):
 		self.door = door
 		self.socket = DoorSocket()
@@ -23,7 +23,7 @@ class DoorController:
 	def connected(self):
 		if self.socket.connected():
 			self.socket.send_cmd(CMD_DOOR_LIVE)
-			return self.socket.wait_confirm()
+			return self.socket.get_answer()
 		else:
 			return False
 
@@ -31,12 +31,18 @@ class DoorController:
 	def firewall_up(self):
 		self.socket.send_cmd(CMD_DOOR_FIREWALL_UP)
 		self.socket.send_obj(get_public_ip())
-		return self.socket.wait_confirm()
+		res = self.socket.get_answer()
+		if not res["success"]:
+			if res["msg"] and res["msg"]!="":
+				log(WARNING, msg)
+			else:
+				log(WARNING, "failed to start door firewall")
+		return res["success"]
 
 	# CMD_DOOR_FIREWALL_DOWN
 	def firewall_down(self):
 		self.socket.send_cmd(CMD_DOOR_FIREWALL_DOWN)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_DOOR_WG_KEYGEN
 	def wg_keygen(self):
@@ -50,25 +56,25 @@ class DoorController:
 	# CMD_DOOR_WG_UP
 	def wg_up(self):
 		self.socket.send_cmd(CMD_DOOR_WG_UP)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_DOOR_WG_DOWN
 	def wg_down(self):
 		self.socket.send_cmd(CMD_DOOR_WG_DOWN)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_DOOR_WG_GEN_CONF
 	def wg_gen_conf(self, vm_wg_pubkey):
 		self.socket.send_cmd(CMD_DOOR_WG_GEN_CONF)
 		self.socket.send_obj(vm_wg_pubkey)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_DOOR_TRAFFIC_SHAPER_UP
 	def traffic_shaper_up(self):
 		self.socket.send_cmd(CMD_DOOR_TRAFFIC_SHAPER_UP)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_DOOR_TRAFFIC_SHAPER_DOWN
 	def traffic_shaper_down(self):
 		self.socket.send_cmd(CMD_DOOR_TRAFFIC_SHAPER_DOWN)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()

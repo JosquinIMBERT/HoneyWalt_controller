@@ -2,16 +2,15 @@
 import os, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.files import *
 from vm.proto import *
 from vm.sock import VMSocket
+from utils.controller import Controller
 
-class VMController:
+class VMController(Controller):
 	def __init__(self):
 		self.socket = VMSocket()
 		self.phase = None
-		self.ips = None
 
 	def __del__(self):
 		del self.socket
@@ -27,7 +26,8 @@ class VMController:
 
 	def start(self, phase):
 		# Starting the VM
-		with open(to_root_path("var/template/vm_phase"+str(phase)+".txt"), "r") as temp_file: template = Template(temp_file.read())
+		with open(to_root_path("var/template/vm_phase"+str(phase)+".txt"), "r") as temp_file:
+			template = Template(temp_file.read())
 		vm_cmd = template.substitute({
 			"pidfile": to_root_path("run/vm.pid"),
 			"diskfile": "/persist/disk.dd",
@@ -41,6 +41,17 @@ class VMController:
 	def stop(self):
 		self.phase = None
 
+		# Schedule hard shutdown in case of fail of soft shutdown
+		timer = threading.Timer(10, self.hard_shutdown)
+		timer.start()
+
+		# Trying soft shutdown (run shutdown command)
+		self.soft_shutdown()
+
+		# Cancel hard shutdown if soft shutdown was successful
+		if not self.pid():
+			timer.cancel()
+
 	def connect(self):
 		self.socket.connect()
 
@@ -49,18 +60,11 @@ class VMController:
 	# COMMUNICATION WITH THE VM #
 	#############################
 
-
-	def initiate(self):
-		else:
-			# RUN PHASE
-			self.ips = self.get_ips() # IPs needed for tunnels (Cowrie <-> Device)
-			self.wg_up()
-
 	# CMD_VM_LIVE
 	def connected(self):
 		if self.socket.connected():
 			self.socket.send_cmd(CMD_VM_LIVE)
-			return self.socket.wait_confirm()
+			return self.socket.get_answer()
 		else:
 			return False
 
@@ -68,20 +72,20 @@ class VMController:
 	def send_phase(self):
 		self.socket.send_cmd(CMD_VM_PHASE)
 		self.socket.send_obj(self.phase)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_VM_WALT_DEVS
 	def send_devices(self, devs):
 		self.socket.send_cmd(CMD_VM_WALT_DEVS)
 		self.socket.send_obj(devs)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_VM_WALT_IPS
 	def get_ips(self):
 		self.socket.send_cmd(CMD_VM_WALT_IPS)
 		ips = self.socket.recv_obj()
-		if str(ips) == "0": # Failed
-			return False
+		if str(ips) == "0" or str(ips) == "": # Failed
+			return None
 		else:
 			return ips
 
@@ -99,24 +103,37 @@ class VMController:
 	def send_doors(self, doors):
 		self.socket.send_cmd(CMD_VM_WG_DOORS)
 		self.socket.send_obj(doors)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_VM_WG_UP
 	def wg_up(self):
 		self.socket.send_cmd(CMD_VM_WG_UP)
-		return self.socket.wait_confirm()
+		res = self.socket.get_answer()
+		return res["success"]
 
 	# CMD_VM_WG_DOWN
 	def wg_down(self):
 		self.socket.send_cmd(CMD_VM_WG_DOWN)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_VM_COMMIT
 	def commit(self):
 		self.socket.send_cmd(CMD_VM_COMMIT)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer()
 
 	# CMD_VM_SHUTDOWN
-	def shutdown(self):
+	def soft_shutdown(self):
+		log(INFO, "starting vm soft shutdown")
 		self.socket.send_cmd(CMD_VM_SHUTDOWN)
-		return self.socket.wait_confirm()
+		return self.socket.get_answer(timeout=10)
+
+	def hard_shutdown(self):
+		log(INFO, "starting vm hard shutdown")
+		path = to_root_path("run/vm.pid")
+		if exists(path):
+			try:
+				kill_from_file(path)
+				return
+			except:
+				pass
+		log(WARNING, "Failed to stop the VM (pidfile:"+str(path)+").")

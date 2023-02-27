@@ -2,7 +2,6 @@
 import os, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from door.controller import DoorController
 
 class DoorGlobalController:

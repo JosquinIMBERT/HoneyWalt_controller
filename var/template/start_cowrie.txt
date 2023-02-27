@@ -1,0 +1,6 @@
+su - cowrie -c " \
+	export COWRIE_CONFIG_PATH=${conf_path}; \
+	/home/cowrie/cowrie/bin/cowrie start \
+		--pidfile=${pid_path} \
+		--logfile=${log_path} \
+"

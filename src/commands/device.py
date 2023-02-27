@@ -2,7 +2,6 @@
 import os, re, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 from utils.logs import *
 
@@ -12,7 +11,7 @@ def add(name, mac, image, ports=[]):
 
 	regex = re.compile(r'^(walt|docker|hub):[a-z0-9\-]+/[a-z0-9\-]+(:[a-z0-9\-]+)?$')
 	if regex.match(image):
-		log(glob.WARNING, image+" seem to be a cloneable image link. Extracting short name")
+		log(WARNING, image+" seem to be a cloneable image link. Extracting short name")
 		image = extract_short_name(image)
 
 	if find(glob.CONFIG["device"], name, "node") is not None or \
@@ -51,7 +50,7 @@ def chg(name, new_name=None, new_image=None, new_ports=None):
 	if new_image:
 		regex = re.compile(r'^(walt|docker|hub):[a-z0-9\-]+/[a-z0-9\-]+(:[a-z0-9\-]+)?$')
 		if regex.match(new_image):
-			log(glob.WARNING, new_image+" seem to be a cloneable image link. Extracting short name")
+			log(WARNING, new_image+" seem to be a cloneable image link. Extracting short name")
 			new_image = extract_short_name(new_image)
 
 	device = find(glob.CONFIG["device"], name, "node")

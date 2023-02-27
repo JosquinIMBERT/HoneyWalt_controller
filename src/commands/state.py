@@ -2,14 +2,14 @@
 import os, sys, time
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
-from config import set_conf
+from config import *
 import glob
 import tools.cowrie as cowrie
 import tools.traffic as traffic
 import tools.tunnel as tunnel
 import tools.wireguard as wg
-from utils import *
+from utils.logs import *
+from utils.misc import *
 from control_socket import ControlSocket
 
 
@@ -17,80 +17,115 @@ from control_socket import ControlSocket
 def start():
 	res={"success":True}
 
-	if is_running():
+
+	#####################
+	#		CHECKS		#
+	#####################
+
+	if glob.SERVER.VM_CONTROLLER.pid() is not None:
 		res["success"] = False
 		res["msg"] = "please stop HoneyWalt before to start"
 		return res
 
-	# Check if changes were commited
-	if glob.CONFIG["need_commit"] == "Empty":
-		res["success"] = False
-		res["msg"] = "your configuration is empty"
-		return res
-	elif glob.CONFIG["need_commit"] == "True":
-		res["success"] = False
-		res["msg"] = "you need to commit your configuration before to run HoneyWalt"
-		return res
 
-	delete(to_root_path("run/cowrie/pid"), suffix=".pid")
-	delete(to_root_path("run/ssh/cowrie-dmz"), suffix=".pid")
-	delete(to_root_path("run/ssh/cowrie-out"), suffix=".pid")
-	delete(to_root_path("run/traffic-shaper"), suffix=".pid")
+	#####################
+	#  LOAD RUN CONFIG  #
+	#####################
 
-	# Allow cowrie user to access cowrie files
-	run("chown -R cowrie "+to_root_path("run/cowrie/"), "failed chown cowrie")
+	glob.RUN_CONFIG = get_conf()
 
-	# Start the VM
-	log(glob.INFO, "starting VM")
+	if glob.CONFIG["need_commit"] == "True":
+		res["msg"] = "warning: you have uncommited changes. Running with the previous commited configuration"
+
+
+	#####################
+	#	   CLEAN UP 	#
+	#####################
+
+	glob.SERVER.TUNNELS_CONTROLLER.init_run()
+	glob.SERVER.COWRIE_CONTROLLER.init_run()
+	glob.SERVER.TRAFFIC_CONTROLLER.init_run()
+
+
+	#####################
+	#		VM BOOT		#
+	#####################
+
+	log(INFO, "starting VM")
 	glob.SERVER.VM_CONTROLLER.start(2)
-	glob.VM_SOCK = ControlSocket(2)
-	
-	# List the backends
-	backends = []
-	i=0
-	for dev in glob.CONFIG["device"]:
-		backends += [ dev["node"] ]
-		i+=1
-	
-	# List the images
-	images = []
-	i=0
-	for img in glob.CONFIG["image"]:
-		images += [ img["short_name"] ]
+	log(INFO, "waiting for VM to boot and connect")
+	glob.SERVER.VM_CONTROLLER.connect()
+	log(INFO, "sending phase to VM")
+	glob.SERVER.VM_CONTROLLER.send_phase()
+	log(INFO, "getting devices IPs")
+	ips = glob.SERVER.VM_CONTROLLER.get_ips()
 
-	# Initiate control
-	log(glob.INFO, "initiating VM control")
-	glob.VM_SOCK.initiate(backends=backends, images=images)
+	if not ips:
+		res["success"] = False
+		res["msg"] = "failed to get devices IPs"
+		return res
+
+	for ip in ips:
+		dev = find(glob.RUN_CONFIG["device"], ip["id"], "id")
+		dev["ip"] = ip["ip"]
+
+
+	#####################
+	#	 START COWRIE	#
+	#####################
 	
 	# Start tunnels between cowrie and devices
-	log(glob.INFO, "starting tunnels between cowrie and Walt nodes")
-	tunnel.start_cowrie_tunnels_dmz()
+	log(INFO, "starting tunnels between cowrie and Walt nodes")
+	glob.SERVER.TUNNELS_CONTROLLER.start_cowrie_dmz()
 
 	# Start cowrie
-	log(glob.INFO, "starting cowrie")
-	cowrie.start()
+	log(INFO, "starting cowrie")
+	glob.SERVER.COWRIE_CONTROLLER.start_cowrie()
+
+
+	#####################
+	#	  FIREWALL		#
+	#####################
 
 	# Start doors firewalls
-	log(glob.INFO, "starting doors firewalls")
-	traffic.start_door_firewall()
+	log(INFO, "starting doors firewalls")
+	glob.SERVER.DOORS_CONTROLLER.firewall_up()
 
-	# Start wireguard
-	log(glob.INFO, "starting wireguard")
-	wg.start_tunnels()
-	log(glob.INFO, "starting udp to tcp adapter")
-	wg.start_tcp_tunnels()
+
+	#####################
+	#	  WIREGUARD 	#
+	#####################
+
+	log(INFO, "starting vm wireguard")
+	glob.SERVER.VM_CONTROLLER.wg_up()
+	log(INFO, "starting doors wireguard")
+	glob.SERVER.DOORS_CONTROLLER.wg_up()
+	log(INFO, "starting doors traffic-shaper")
+	glob.SERVER.DOORS_CONTROLLER.traffic_shaper_up()
+	log(INFO, "starting local traffic-shaper")
+	glob.SERVER.TRAFFIC_CONTROLLER.traffic_shaper_up()
+
+
+	#####################
+	#  TRAFFIC CONTROL  #
+	#####################
 
 	# Start traffic control
-	log(glob.INFO, "starting traffic control")
-	traffic.start_control()
+	log(INFO, "starting traffic control")
+	glob.SERVER.TRAFFIC_CONTROLLER.start_control()
+
+
+	#####################
+	#		EXPOSE		#
+	#####################
 
 	# Start tunnels between cowrie and doors
-	log(glob.INFO, "starting tunnels between doors and cowrie")
-	tunnel.start_cowrie_tunnels_out()
+	log(INFO, "starting tunnels between doors and cowrie")
+	glob.SERVER.TUNNELS_CONTROLLER.start_door_cowrie()
 
 	# Start to expose other ports
-	log(glob.INFO, "starting exposed ports tunnels")
-	tunnel.start_exposure_tunnels()
+	log(INFO, "starting exposed ports tunnels")
+	glob.SERVER.TUNNELS_CONTROLLER.start_expose_ports()
 
 	return res
 
@@ -100,7 +135,7 @@ def start():
 def commit(regen=True, force=False):
 	res={"success":True}
 
-	if is_running():
+	if glob.SERVER.VM_CONTROLLER.pid() is not None:
 		res["success"] = False
 		res["msg"] = "please stop HoneyWalt before to commit"
 		return res
@@ -116,7 +151,7 @@ def commit(regen=True, force=False):
 
 	if regen:
 		log(INFO, "generating cowrie configurations")
-		cowrie.gen_configurations()
+		glob.SERVER.COWRIE_CONTROLLER.generate_configurations()
 
 	log(INFO, "generating doors wireguard keys")
 	doors_keys = glob.SERVER.DOORS_CONTROLLER.wg_keygen()
@@ -126,8 +161,8 @@ def commit(regen=True, force=False):
 	for door_key in doors_keys:
 		door = find(glob.CONFIG["door"], door_key["host"], "host")
 		doors += [{
-			"ip":glob.IP_FOR_DMZ,
-			"door":glob.WIREGUARD_PORTS+int(door["id"]),
+			"ip":settings.get("IP_FOR_DMZ"),
+			"door":settings.get("WIREGUARD_PORTS")+int(door["id"]),
 			"dev":door["dev"],
 			"wg_pubkey":door_key["wg_pubkey"]
 		}]
@@ -176,23 +211,23 @@ def commit(regen=True, force=False):
 def stop():
 	res={"success":True}
 
-	log(glob.INFO, "stopping exposed ports tunnels")
+	log(INFO, "stopping exposed ports tunnels")
 	tunnel.stop_exposure_tunnels()
-	log(glob.INFO, "stopping cowrie tunnels to doors")
+	log(INFO, "stopping cowrie tunnels to doors")
 	tunnel.stop_cowrie_tunnels_out()
-	log(glob.INFO, "stopping cowrie")
+	log(INFO, "stopping cowrie")
 	cowrie.stop()
-	log(glob.INFO, "stopping cowrie tunnels to dmz")
+	log(INFO, "stopping cowrie tunnels to dmz")
 	tunnel.stop_cowrie_tunnels_dmz()
-	log(glob.INFO, "stopping udp tcp adapter")
+	log(INFO, "stopping udp tcp adapter")
 	wg.stop_tcp_tunnels()
-	log(glob.INFO, "stopping wireguard")
+	log(INFO, "stopping wireguard")
 	wg.stop_tunnels()
-	log(glob.INFO, "stopping VM")
+	log(INFO, "stopping VM")
 	glob.SERVER.VM_CONTROLLER.stop()
-	log(glob.INFO, "stopping traffic control")
+	log(INFO, "stopping traffic control")
 	traffic.stop_control()
-	log(glob.INFO, "stopping doors firewalls")
+	log(INFO, "stopping doors firewalls")
 	traffic.stop_door_firewall()
 
 	return res
@@ -238,8 +273,3 @@ def status():
 	res["answer"]["nb_doors"] = len(glob.CONFIG["door"])
 
 	return res
-
-
-# We consider the state of the VM determines whether HoneyWalt is running or not
-def is_running():
-	return glob.SERVER.VM_CONTROLLER.pid() is not None

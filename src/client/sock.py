@@ -2,7 +2,6 @@
 import socket, time
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 from utils.logs import *
 from utils.sockets import *
 from client.proto import *
