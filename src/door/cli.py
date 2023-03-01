@@ -1,5 +1,5 @@
 # External
-import fileinput, os, sys
+import argparse, fileinput, os, sys
 
 # Internal
 sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
@@ -22,11 +22,14 @@ class DoorControllerClient:
 	def print_help(self):
 		print("Enter one of the following numbers:")
 		for key in DOOR_COMMANDS:
-			print("\t-  "+str(DOOR_COMMANDS[key])+" - "+str(key))
+			if DOOR_COMMANDS[key] == CMD_DOOR_WG_ADD_PEER:
+				print("\t-  "+str(DOOR_COMMANDS[key])+" - "+str(key)+" <pubkey> <dev_id>")
+			else:
+				print("\t-  "+str(DOOR_COMMANDS[key])+" - "+str(key))
 		print("\t-  "+str(self.help)+" - HELP")
 		print("\t- "+str(self.quit)+" - QUIT")
 
-	def execute(self, cmd):
+	def execute(self, cmd, line):
 		if cmd == CMD_DOOR_FIREWALL_UP:
 			print(self.controller.firewall_up())
 		elif cmd == CMD_DOOR_FIREWALL_DOWN:
@@ -37,31 +40,58 @@ class DoorControllerClient:
 			print(self.controller.wg_up())
 		elif cmd == CMD_DOOR_WG_DOWN:
 			print(self.controller.wg_down())
-		elif cmd == CMD_DOOR_WG_GEN_CONF:
-			print(self.controller.wg_gen_conf())
+		elif cmd == CMD_DOOR_WG_ADD_PEER:
+			if len(line) != 2:
+				print("[ERROR] invalid arguments")
+				return None
+			pubkey = line[0]
+			dev_id = int(line[1])
+			print(self.controller.wg_add_peer(pubkey, dev_id))
 		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_UP:
 			print(self.controller.traffic_shaper_up())
 		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_DOWN:
 			print(self.controller.traffic_shaper_down())
+		elif cmd == CMD_DOOR_LIVE:
+			print(self.controller.connected())
 		else:
 			print("Unknown command")
 
 	def run(self):
 		self.print_help()
 
-		for line in fileinput.input():
-			cmd = int(line)
-			if cmd == self.help:
-				self.print_help()
-			elif cmd == self.quit:
-				print("QUIT")
-				break
+		print("cli>", end='', flush=True)
+		for line in fileinput.input(files=[]):
+			line = line.split(" ")
+			try:
+				cmd = int(line[0])
+			except:
+				pass
 			else:
-				self.execute(cmd)
+				if cmd == self.help:
+					self.print_help()
+				elif cmd == self.quit:
+					print("QUIT")
+					break
+				else:
+					self.execute(cmd, line[1:])
+			print("cli>", end='', flush=True)
 
 def main():
+	parser = argparse.ArgumentParser(description='HoneyWalt Door Client: test the door protocol from a command line interface')
+	parser.add_argument("-a", "--ip-address", nargs=1, help="IP address of the door")
+	parser.add_argument("-p", "--port", nargs=1, help="Port where the door listens")
+	options = parser.parse_args()
+
+	ip = "127.0.0.1"
+	port = 5556
+
+	if options.ip_address is not None:
+		ip = options.ip_address[0]
+	if options.port is not None:
+		port = int(options.port[0])
+
 	glob.init(None, get_conf(), to_root_path("var/key/id_olim"), to_root_path("var/key/id_olim.pub"), to_root_path("var/key/id_door"), to_root_path("var/key/id_door.pub"))
-	cli = DoorControllerClient({"ip":"127.0.0.1", "port":9999})
+	cli = DoorControllerClient({"ip":ip, "port":port})
 	cli.run()
 
 if __name__ == '__main__':

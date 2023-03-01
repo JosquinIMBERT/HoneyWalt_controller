@@ -30,14 +30,8 @@ class DoorController(Controller):
 	# CMD_DOOR_FIREWALL_UP
 	def firewall_up(self):
 		self.socket.send_cmd(CMD_DOOR_FIREWALL_UP)
-		self.socket.send_obj(get_public_ip())
 		res = self.socket.get_answer()
-		if not res["success"]:
-			if res["msg"] and res["msg"]!="":
-				log(WARNING, msg)
-			else:
-				log(WARNING, "failed to start door firewall")
-		return res["success"]
+		return res
 
 	# CMD_DOOR_FIREWALL_DOWN
 	def firewall_down(self):
@@ -47,11 +41,7 @@ class DoorController(Controller):
 	# CMD_DOOR_WG_KEYGEN
 	def wg_keygen(self):
 		self.socket.send_cmd(CMD_DOOR_WG_KEYGEN)
-		keys = self.socket.recv_obj()
-		if str(keys) == "0": # Failed
-			return False
-		else:
-			return keys
+		return self.socket.get_answer()
 
 	# CMD_DOOR_WG_UP
 	def wg_up(self):
@@ -63,10 +53,10 @@ class DoorController(Controller):
 		self.socket.send_cmd(CMD_DOOR_WG_DOWN)
 		return self.socket.get_answer()
 
-	# CMD_DOOR_WG_GEN_CONF
-	def wg_gen_conf(self, vm_wg_pubkey):
-		self.socket.send_cmd(CMD_DOOR_WG_GEN_CONF)
-		self.socket.send_obj(vm_wg_pubkey)
+	# CMD_DOOR_WG_ADD_PEER
+	def wg_add_peer(self, pubkey, dev_id):
+		self.socket.send_cmd(CMD_DOOR_WG_ADD_PEER)
+		self.socket.send_obj({"pubkey":pubkey, "id": dev_id})
 		return self.socket.get_answer()
 
 	# CMD_DOOR_TRAFFIC_SHAPER_UP

@@ -31,7 +31,7 @@ class ProtoSocket:
 	def recv_obj(self, timeout=30):
 		bytlen = self.recv(size=OBJECT_SIZE, timeout=timeout)
 		if bytlen is not None:
-			bytobj = self.recv(size=from_bytes(bytlen, 'big'), timeout=timeout)
+			bytobj = self.recv(size=int.from_bytes(bytlen, 'big'), timeout=timeout)
 			if bytobj is not None:
 				return deserialize(bytobj)
 		return None
@@ -40,8 +40,9 @@ class ProtoSocket:
 	def send_cmd(self, cmd):
 		if not self.connected():
 			log(ERROR, self.name()+".send_cmd: Failed to send a command. The socket is not connected")
+			return 0
 		else:
-			self.socket.send(cmd_to_bytes(cmd))
+			return self.socket.send(cmd_to_bytes(cmd))
 
 	# Receive a command (should be on COMMAND_SIZE bytes)
 	def recv_cmd(self):
@@ -49,7 +50,11 @@ class ProtoSocket:
 			log(ERROR, self.name()+".recv_cmd: Failed to send a command. The socket is not connected")
 			return None
 		else:
-			return bytes_to_cmd(self.socket.recv(COMMAND_SIZE))
+			bytes_cmd = self.recv(size=COMMAND_SIZE)
+			if bytes_cmd:
+				return bytes_to_cmd(bytes_cmd)
+			else:
+				return None
 
 	# get_answer
 	# Print the warnings, errors and fatal errors, get the answer
@@ -60,7 +65,7 @@ class ProtoSocket:
 	def get_answer(self, timeout=30):
 		res = self.recv_obj(timeout=30)
 		if not res or not isinstance(res, dict) or not "success" in res: 
-			log(ERROR, self.name()+".wait_answer: received an invalid answer")
+			log(ERROR, self.name()+".get_answer: received an invalid answer")
 			return False
 		else:
 			# Logging warnings, errors, and fatal errors
@@ -86,7 +91,7 @@ class ProtoSocket:
 
 	# Send data to the socket
 	def send(self, bytes_msg):
-		self.socket.send(bytes_msg)
+		return self.socket.send(bytes_msg)
 
 	# Receive data on socket, with a timeout
 	def recv(self, size=2048, timeout=30):
@@ -96,7 +101,13 @@ class ProtoSocket:
 		except socket.timeout:
 			log(WARNING, self.name()+".recv: reached timeout")
 			return None
-		except:
+		except KeyboardInterrupt:
+			log(INFO, self.name()+".recv: received KeyboardInterrupt")
+			import glob
+			if "SERVER" in dir(glob):
+				glob.SERVER.stop()
+		except Exception as err:
+			print(err)
 			eprint(self.name()+".recv: an unknown error occured")
 		else:
 			if not res:

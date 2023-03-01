@@ -100,6 +100,8 @@ def start():
 	glob.SERVER.VM_CONTROLLER.wg_up()
 	log(INFO, "starting doors wireguard")
 	glob.SERVER.DOORS_CONTROLLER.wg_up()
+	log(INFO, "adding doors wireguard peers")
+	glob.SERVER.DOORS_CONTROLLER.wg_add_peer()#TODO
 	log(INFO, "starting doors traffic-shaper")
 	glob.SERVER.DOORS_CONTROLLER.traffic_shaper_up()
 	log(INFO, "starting local traffic-shaper")
@@ -197,7 +199,7 @@ def commit(regen=True, force=False):
 	
 	if regen:
 		log(INFO, "generating doors wireguard configurations")
-		glob.SERVER.DOORS_CONTROLLER.commit(vm_keys) # <dev_name,dev_wg_pubkey>
+		glob.SERVER.DOORS_CONTROLLER.wg_add_peer(vm_keys) # <door_id,dev_id,pubkey>
 
 	log(INFO, "updating configuration file")
 	set_conf(glob.CONFIG, need_commit=False)

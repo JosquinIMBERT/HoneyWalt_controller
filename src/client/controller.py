@@ -4,12 +4,13 @@ import os, sys
 # Internal
 from client.proto import *
 from client.sock import ClientSocket
+import commands
 from utils.controller import Controller
 
 class ClientController(Controller):
 	def __init__(self):
 		self.socket = ClientSocket()
-		self.keep_running = True
+		self.keep_running = False
 
 	def __del__(self):
 		del self.socket
@@ -18,6 +19,7 @@ class ClientController(Controller):
 		self.socket.start()
 
 	def run(self):
+		self.keep_running = True
 		while self.keep_running:
 			self.socket.accept()
 			while self.keep_running:

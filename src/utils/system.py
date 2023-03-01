@@ -21,21 +21,34 @@ def kill_from_file(filename, filetype="pid"):
 				os.kill(pid, signal.SIGTERM)
 	elif filetype=="ssh":
 		kill_cmd = "ssh -S "+filename+" -O exit 0.0.0.0"
-		res = subprocess.run(kill_cmd, shell=True ,check=True, text=True)
+		res = subprocess.run(
+			kill_cmd,
+			"Failed to kill the ssh process",
+			shell=True,
+			check=True,
+			text=True
+		)
 		if res.returncode != 0:
 			eprint("failed to kill and ssh tunnel")
 	else:
 		eprint("unknown file type")
 
-def run(command, error, output=False, timeout=None):
-	log(COMMAND, command)
-	res = subprocess.run(command, shell=True ,check=True, text=True, capture_output=output, timeout=timeout)
+def run(cmd, error, check=False, output=False, timeout=False):
+	log(COMMAND, cmd)
+	res = subprocess.run(
+		cmd,
+		shell=True,
+		check=check,
+		text=True,
+		capture_output=output,
+		timeout=None if not timeout else timeout
+	)
 	if res.returncode != 0:
 		eprint(error)
 	if output:
 		return str(res.stdout)
 	else:
-		return None
+		return res.returncode == 0
 
 # Source: https://github.com/giampaolo/psutil/blob/5ba055a8e514698058589d3b615d408767a6e330/psutil/_psposix.py#L28-L53
 # Check whether a PID corresponds to a running process (kill 0 allows to test the PID without killing any process)

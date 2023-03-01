@@ -12,6 +12,7 @@ def to_root_path(path):
 	root_path = get_root_path()
 	return join(root_path, path)
 
+# delete files with a given suffix in a directory
 def delete(directory, suffix=""):
 	for name in os.listdir(directory):
 		file = os.path.join(directory,name)
