@@ -1,12 +1,15 @@
+# External
 import signal
 
+# Internal
 from client.controller import ClientController
+from common.utils.files import *
+from config import get_conf
 from door.global_controller import DoorGlobalController
 import glob
 from tools.cowrie import CowrieController
 from tools.traffic import TrafficController
 from tools.tunnels import TunnelsController
-from common.utils.files import *
 from vm.controller import VMController
 
 def handle(signum, frame):

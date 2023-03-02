@@ -66,7 +66,7 @@ class TrafficShaper:
 	def decode_len(self, length):
 		return int.from_bytes(length, "big")
 
-	def controller_tunnel(self)
+	def controller_tunnel(self):
 		# UDP Server + TCP client
 		with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_sock:
 			udp_sock.bind((self.udp_lo_host, self.udp_lo_port))
