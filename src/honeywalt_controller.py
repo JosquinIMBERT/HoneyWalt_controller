@@ -1,11 +1,12 @@
 import signal
 
-import glob
 from client.controller import ClientController
 from door.global_controller import DoorGlobalController
-from utils.cowrie import CowrieController
+import glob
+from tools.cowrie import CowrieController
+from tools.traffic import TrafficController
+from tools.tunnels import TunnelsController
 from utils.files import *
-from utils.tunnels import TunnelsController
 from vm.controller import VMController
 
 def handle(signum, frame):
@@ -27,6 +28,7 @@ class ControllerServer:
 		self.CLIENT_CONTROLLER = ClientController()
 		self.COWRIE_CONTROLLER = CowrieController()
 		self.TUNNELS_CONTROLLER = TunnelsController()
+		self.TRAFFIC_CONTROLLER = TrafficController()
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C
 
 	def start(self):

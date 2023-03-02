@@ -4,10 +4,6 @@ import os, sys, time
 # Internal
 from config import *
 import glob
-import tools.cowrie as cowrie
-import tools.traffic as traffic
-import tools.tunnel as tunnel
-import tools.wireguard as wg
 from utils.logs import *
 from utils.misc import *
 from control_socket import ControlSocket
@@ -96,12 +92,18 @@ def start():
 	#	  WIREGUARD 	#
 	#####################
 
+	# Formatting devices wireguard public keys
+	keys = [] #<door_id,dev_id,pubkey>
+	for door in glob.RUN_CONFIG["door"]:
+		dev = find(glob.RUN_CONFIG["device"], door["dev"], "node")
+		keys += [{"door_id": door["id"], "dev_id": dev["id"], "pubkey": dev["pubkey"]}]
+
 	log(INFO, "starting vm wireguard")
 	glob.SERVER.VM_CONTROLLER.wg_up()
+	log(INFO, "adding doors wireguard peers")
+	glob.SERVER.DOORS_CONTROLLER.wg_add_peer(keys)
 	log(INFO, "starting doors wireguard")
 	glob.SERVER.DOORS_CONTROLLER.wg_up()
-	log(INFO, "adding doors wireguard peers")
-	glob.SERVER.DOORS_CONTROLLER.wg_add_peer()#TODO
 	log(INFO, "starting doors traffic-shaper")
 	glob.SERVER.DOORS_CONTROLLER.traffic_shaper_up()
 	log(INFO, "starting local traffic-shaper")
@@ -197,9 +199,10 @@ def commit(regen=True, force=False):
 	log(INFO, "generating VM wireguard configuration (VM commit)")
 	glob.SERVER.VM_CONTROLLER.commit()
 	
-	if regen:
-		log(INFO, "generating doors wireguard configurations")
-		glob.SERVER.DOORS_CONTROLLER.wg_add_peer(vm_keys) # <door_id,dev_id,pubkey>
+	# Adding wireguard public keys to devices in config
+	for dev in vm_keys: #<dev_id,pubkey>
+		dev = find(glob.CONFIG["device"], dev["dev_id"], "id")
+		dev["pubkey"] = dev["pubkey"]
 
 	log(INFO, "updating configuration file")
 	set_conf(glob.CONFIG, need_commit=False)
@@ -211,28 +214,37 @@ def commit(regen=True, force=False):
 
 
 def stop():
-	res={"success":True}
-
+	# Tunnels and Cowrie
 	log(INFO, "stopping exposed ports tunnels")
-	tunnel.stop_exposure_tunnels()
+	glob.SERVER.TUNNELS_CONTROLLER.stop_expose_ports()
 	log(INFO, "stopping cowrie tunnels to doors")
-	tunnel.stop_cowrie_tunnels_out()
+	glob.SERVER.TUNNELS_CONTROLLER.stop_cowrie_tunnels_out()
 	log(INFO, "stopping cowrie")
-	cowrie.stop()
+	glob.SERVER.COWRIE_CONTROLLER.stop()
 	log(INFO, "stopping cowrie tunnels to dmz")
-	tunnel.stop_cowrie_tunnels_dmz()
-	log(INFO, "stopping udp tcp adapter")
-	wg.stop_tcp_tunnels()
+	glob.SERVER.TUNNELS_CONTROLLER.stop_cowrie_tunnels_dmz()
+	
+	# Traffic Shaper
+	log(INFO, "stopping traffic shaper on controller side")
+	glob.SERVER.TRAFFIC_CONTROLLER.traffic_shaper_down()
+	log(INFO, "stopping traffic shaper on doors side")
+	glob.SERVER.DOORS_CONTROLLER.traffic_shaper_down()
+	
+	# Wireguard
 	log(INFO, "stopping wireguard")
-	wg.stop_tunnels()
+	glob.SERVER.DOORS_CONTROLLER.wg_down()
+	
+	# VM
 	log(INFO, "stopping VM")
 	glob.SERVER.VM_CONTROLLER.stop()
+	
+	# Traffic Control and Firewalls
 	log(INFO, "stopping traffic control")
-	traffic.stop_control()
+	glob.SERVER.TRAFFIC_CONTROLLER.stop_control()
 	log(INFO, "stopping doors firewalls")
-	traffic.stop_door_firewall()
+	glob.SERVER.DOORS_CONTROLLER.firewall_down()
 
-	return res
+	return {"success":True}
 
 
 def restart(regen=False):
@@ -267,7 +279,7 @@ def status():
 		res["answer"]["vm_pid"] = vm_pid
 	
 	# Cowrie
-	nb_cowrie_pids = cowrie.state()
+	nb_cowrie_pids = glob.SERVER.COWRIE_CONTROLLER.state()
 	res["answer"]["cowrie_instances"] = nb_cowrie_pids
 	
 	# Configuration
