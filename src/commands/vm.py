@@ -7,25 +7,16 @@ from common.utils.logs import *
 import glob
 
 def shell():
-	# if vm.state():
-	# 	if vm.phase()!=1:
-	# 		log(WARNING, "The VM seems to be exposed.\nBe careful with what you run, the attacker could have infected it.")
-	# 	i=0
-	# 	while i<24:
-	# 		i+=1
-	# 		try:
-	# 			run("ssh root@"+settings.get("VM_IP")+" -i "+settings.get("VM_PRIV_KEY")+" 2>/dev/null", "")
-	# 		except Exception:
-	# 			if i==1:
-	# 				print("Waiting for the VM to boot...")
-	# 			time.sleep(5)
-	# 		else:
-	# 			break
-	# 	if i>=24:
-	# 		eprint("failed to connect to the vm")
-	# else:
-	# 	eprint("the VM is not running")
-	pass
+	if not glob.SERVER.VM_CONTROLLER.pid():
+		return {"success": False, "error": ["the VM seems to be stopped"]}
+	else:
+		res = {"success": True, "answer": {}}
+		if glob.SERVER.VM_CONTROLLER.phase != 1:
+			res["warning"] = ["the VM is in run mode. Your modifications will be lost after reboot and an attacker could infect the VM"]
+		res["answer"]["ip"] = settings.get("VM_IP")
+		with open(glob.VM_PRIV_KEY, "r") as keyfile:
+			res["answer"]["key"] = keyfile.read()
+		return res
 
 def start(phase):
 	res={"success":True}
