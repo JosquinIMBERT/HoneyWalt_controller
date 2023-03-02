@@ -4,7 +4,7 @@ import os, sys
 # Internal
 from common.utils.controller import Controller
 from common.utils.files import *
-from vm.proto import *
+from common.vm.proto import *
 from vm.sock import VMSocket
 
 class VMController(Controller):

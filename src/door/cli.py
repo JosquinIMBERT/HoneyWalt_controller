@@ -5,7 +5,7 @@ import argparse, fileinput, os, sys
 sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 from config import get_conf
-from door.proto import *
+from common.door.proto import *
 from door.controller import *
 from common.utils.files import *
 

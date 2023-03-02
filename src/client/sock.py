@@ -4,7 +4,7 @@ import socket, time
 # Internal
 from common.utils.logs import *
 from common.utils.sockets import *
-from client.proto import *
+from common.client.proto import *
 
 class ClientSocket(ProtoSocket):
 	def __init__(self):

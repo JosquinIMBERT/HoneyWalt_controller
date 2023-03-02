@@ -4,7 +4,7 @@ import os, socket, sys, time
 # Internal
 from common.utils.logs import *
 from common.utils.sockets import *
-from vm.proto import *
+from common.vm.proto import *
 
 class VMSocket(ProtoSocket):
 	def __init__(self):

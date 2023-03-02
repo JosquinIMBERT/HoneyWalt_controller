@@ -2,7 +2,7 @@
 import os, sys
 
 # Internal
-from client.proto import *
+from common.client.proto import *
 from client.sock import ClientSocket
 import commands
 from common.utils.controller import Controller

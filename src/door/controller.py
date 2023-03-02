@@ -2,7 +2,7 @@
 import os, sys
 
 # Internal
-from door.proto import *
+from common.door.proto import *
 from door.sock import DoorSocket
 from common.utils.controller import Controller
 from common.utils.misc import get_public_ip
