@@ -22,7 +22,7 @@ def start(phase):
 
 	if glob.SERVER.VM_CONTROLLER.pid() is not None:
 		res["success"] = False
-		res["msg"] = "the VM is already running"
+		res["error"] = ["the VM is already running"]
 		return res
 	glob.SERVER.VM_CONTROLLER.start(phase)
 
@@ -33,7 +33,7 @@ def stop():
 
 	if glob.SERVER.VM_CONTROLLER.pid() is None:
 		res["success"] = False
-		res["msg"] = "the VM is already stopped"
+		res["error"] = ["the VM is already stopped"]
 		return res
 	glob.SERVER.VM_CONTROLLER.stop()
 

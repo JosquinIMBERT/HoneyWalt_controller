@@ -13,13 +13,13 @@ def add(name, username="root", password="root"):
 	regex = re.compile(r'^(walt|docker|hub):[a-z0-9\-]+/[a-z0-9\-]+(:[a-z0-9\-]+)?$')
 	if not regex.match(name):
 		res["success"] = False
-		res["msg"] = name+" is not a Walt image clonable link"
+		res["error"] = [name+" is not a Walt image clonable link"]
 		return res
 	short_name = extract_short_name(name)
 
 	if find(glob.CONFIG["image"], name, "name") is not None:
 		res["success"] = False
-		res["msg"] = "image already exists"
+		res["error"] = ["image already exists"]
 		return res
 
 	if username is None:
@@ -45,7 +45,7 @@ def chg(name, username=None, password=None):
 
 	if username is None and password is None:
 		res["success"] = False
-		res["msg"] = "no new value was given"
+		res["error"] = ["no new value was given"]
 		return res
 
 	# Find image name type (cloneable or short)
@@ -54,7 +54,7 @@ def chg(name, username=None, password=None):
 		regex = re.compile(r'^[a-z0-9\-]+$')
 		if not regex.match(name):
 			res["success"] = False
-			res["msg"] = name+" is not a Walt image name nor a clonable link"
+			res["error"] = [name+" is not a Walt image name nor a clonable link"]
 			return res
 		else:
 			field="short_name"
@@ -65,7 +65,7 @@ def chg(name, username=None, password=None):
 	image = find(glob.CONFIG["image"], name, field)
 	if image is None:
 		res["success"] = False
-		res["msg"] = "image not found"
+		res["error"] = ["image not found"]
 		return res
 
 	# Edit
@@ -86,7 +86,7 @@ def delete(name):
 		regex = re.compile(r'[a-z0-9\-]+')
 		if not regex.match(name):
 			res["success"] = False
-			res["msg"] = name+" is not a Walt image name nor a clonable link"
+			res["error"] = [name+" is not a Walt image name nor a clonable link"]
 			return res
 		else:
 			field="short_name"
@@ -97,7 +97,7 @@ def delete(name):
 	img_id = find_id(glob.CONFIG["image"], name, field)
 	if img_id == -1:
 		res["success"] = False
-		res["msg"] = "unable to find image "+name
+		res["error"] = ["unable to find image "+name]
 		return res
 
 	if field == "name":
@@ -107,7 +107,7 @@ def delete(name):
 	dev = find(glob.CONFIG["device"], short_name, "image")
 	if dev is not None:
 		res["success"] = False
-		res["msg"] = "device "+dev["node"]+" uses image "+name
+		res["error"] = ["device "+dev["node"]+" uses image "+name]
 		return res
 
 	del glob.CONFIG["image"][img_id]

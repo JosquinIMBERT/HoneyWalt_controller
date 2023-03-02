@@ -13,14 +13,14 @@ def add(ip, dev):
 	device = find(glob.CONFIG["device"], dev, "node")
 	if device is None:
 		res["success"] = False
-		res["msg"] = "device not found"
+		res["error"] = ["device not found"]
 		return res
 
 	# Check door doesn't exist
 	door = find(glob.CONFIG["door"], ip, "host")
 	if door is not None:
 		res["success"] = False
-		res["msg"] = "door already exists"
+		res["error"] = ["door already exists"]
 		return res
 
 	# Compute door ID
@@ -50,14 +50,14 @@ def chg(ip, new_ip=None, new_dev=None):
 
 	if new_ip is None and new_dev is None:
 		res["success"] = False
-		res["msg"] = "no new value was given"
+		res["error"] = ["no new value was given"]
 		return res
 
 	# Find the door
 	door = find(glob.CONFIG["door"], ip, "host")
 	if door is None:
 		res["success"] = False
-		res["msg"] = "door not found"
+		res["error"] = ["door not found"]
 		return res
 
 	# Update the fields
@@ -83,7 +83,7 @@ def delete(ip):
 	door = find_id(glob.CONFIG["door"], ip, "host")
 	if door == -1:
 		res["success"] = False
-		res["msg"] = "door not found"
+		res["error"] = ["door not found"]
 		return res
 
 	del glob.CONFIG["door"][door]

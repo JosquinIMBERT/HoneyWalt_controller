@@ -17,12 +17,12 @@ def add(name, mac, image, ports=[]):
 	if find(glob.CONFIG["device"], name, "node") is not None or \
 	   find(glob.CONFIG["device"], mac_addr, "mac") is not None:
 		res["success"] = False
-		res["msg"] = "device already exists"
+		res["error"] = ["device already exists"]
 		return res
 	
 	if find(glob.CONFIG["image"], image, "short_name") is None:
 		res["success"] = False
-		res["msg"] = "image not found"
+		res["error"] = ["image not found"]
 		return res
 
 	# Compute door ID
@@ -56,20 +56,20 @@ def chg(name, new_name=None, new_image=None, new_ports=None):
 	device = find(glob.CONFIG["device"], name, "node")
 	if device is None:
 		res["success"] = False
-		res["msg"] = "device not found"
+		res["error"] = ["device not found"]
 		return res
 
 	if new_name is not None:
 		if find(glob.CONFIG["device"], new_name, "node") is not None:
 			res["success"] = False
-			res["msg"] = "the new name for the device is already taken"
+			res["error"] = ["the new name for the device is already taken"]
 			return res
 		device["node"] = new_name
 
 	if new_image is not None:
 		if find(glob.CONFIG["image"], new_image, "name") is None:
 			res["success"] = False
-			res["msg"] = "image not found"
+			res["error"] = ["image not found"]
 			return res
 		device["image"] = new_image
 
@@ -85,13 +85,13 @@ def delete(name):
 	dev_id = find_id(glob.CONFIG["device"], name, "node")
 	if dev_id == -1:
 		res["success"] = False
-		res["msg"] = "unable to find device "+name
+		res["error"] = ["unable to find device "+name]
 		return res
 
 	door = find(glob.CONFIG["door"], glob.CONFIG["device"][dev_id]["node"], "dev")
 	if door is not None:
 		res["success"] = False
-		res["msg"] = "door "+door["host"]+" uses device "+name
+		res["error"] = ["door "+door["host"]+" uses device "+name]
 		return res
 
 	del glob.CONFIG["device"][dev_id]

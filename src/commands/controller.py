@@ -15,7 +15,7 @@ def set(throughput=None, latency=None):
 
 	if throughput is None and latency is None:
 		res["success"] = False
-		res["msg"] = "no new value was given"
+		res["error"] = ["no new value was given"]
 		return res
 
 	if throughput is not None:
@@ -24,7 +24,7 @@ def set(throughput=None, latency=None):
 			glob.CONFIG["controller"]["throughput"] = throughput
 		else:
 			res["success"] = False
-			res["msg"] = "invalid throughput"
+			res["error"] = ["invalid throughput"]
 			return res
 
 	if latency is not None:
@@ -33,7 +33,7 @@ def set(throughput=None, latency=None):
 			glob.CONFIG["controller"]["latency"] = latency
 		else:
 			res["success"] = False
-			res["msg"] = "invalid latency"
+			res["error"] = ["invalid latency"]
 			return res
 
 	return res
