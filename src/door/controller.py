@@ -6,13 +6,13 @@ from common.door.proto import *
 from common.utils.controller import Controller
 from common.utils.logs import *
 from common.utils.misc import get_public_ip
-from door.sock import DoorSocket
+from common.utils.sockets import ClientSocket
 
 class DoorController(Controller):
 	def __init__(self, door):
 		log(DEBUG, "DoorController.__init__: creating the DoorController for "+str(door["host"]))
 		self.door = door
-		self.socket = DoorSocket()
+		self.socket = ClientSocket()
 
 	def __del__(self):
 		del self.socket
