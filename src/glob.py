@@ -16,6 +16,6 @@ def init(controller_server, conf, vm_priv, vm_pub, door_priv, door_pub):
 	DOOR_PUB_KEY=door_pub
 
 	CONFIG = conf
-	RUN_CONFIG = None
+	RUN_CONFIG = conf
 
 	SERVER = controller_server

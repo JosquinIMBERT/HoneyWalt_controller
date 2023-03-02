@@ -2,7 +2,6 @@
 import os, re, sys, time
 
 # Internal
-import tools.vm as vm
 from common.utils.logs import *
 import glob
 

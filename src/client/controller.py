@@ -2,29 +2,43 @@
 import os, sys
 
 # Internal
+import commands.controller
+import commands.device
+import commands.door
+import commands.image
+import commands.state
+import commands.vm
 from common.client.proto import *
-from client.sock import ClientSocket
-import commands
 from common.utils.controller import Controller
+from common.utils.logs import *
+from common.utils.sockets import ServerSocket
 
 class ClientController(Controller):
 	def __init__(self):
-		self.socket = ClientSocket()
+		log(INFO, "ClientController.__init__: creating the ClientController")
+		self.socket = ServerSocket(CLIENT_PORT)
 		self.keep_running = False
 
 	def __del__(self):
 		del self.socket
 
 	def start(self):
-		self.socket.start()
+		self.socket.bind()
 
 	def run(self):
 		self.keep_running = True
 		while self.keep_running:
-			self.socket.accept()
-			while self.keep_running:
-				cmd = self.socket.recv_cmd()
-				self.execute(cmd)
+			accepted = self.socket.accept()
+			if accepted:
+				disconnected = False
+				while self.keep_running and not disconnected:
+					cmd = self.socket.recv_cmd()
+					if not cmd:
+						disconnected = True
+					else:
+						self.execute(cmd)
+				if disconnected:
+					log(INFO, "ClientController.run: Client disconnected")
 
 	def execute(self, cmd):
 		if cmd == CMD_CLIENT_DOOR:
@@ -69,7 +83,7 @@ class ClientController(Controller):
 			self.socket.send_obj({"success": False, "error":["Unknown command"]})
 
 	def ctrl_execute(self):
-		cmd = socket.recv_cmd()
+		cmd = self.socket.recv_cmd()
 		if cmd == CMD_CLIENT_CTRL_SET:
 			options = self.socket.recv_obj()
 			self.exec(commands.controller.set, throughput=options["throughput"], latency=options["latency"])
@@ -79,7 +93,7 @@ class ClientController(Controller):
 			self.socket.send_obj({"success": False, "error":["Unknown command"]})
 
 	def dev_execute(self):
-		cmd = socket.recv_cmd()
+		cmd = self.socket.recv_cmd()
 		if cmd == CMD_CLIENT_DEV_ADD:
 			options = self.socket.recv_obj()
 			self.exec(commands.device.add, options["name"], options["mac"], options["image"], options["ports"])
@@ -95,7 +109,7 @@ class ClientController(Controller):
 			self.socket.send_obj({"success": False, "error":["Unknown command"]})
 
 	def img_execute(self):
-		cmd = socket.recv_cmd()
+		cmd = self.socket.recv_cmd()
 		if cmd == CMD_CLIENT_IMG_ADD:
 			options = self.socket.recv_obj()
 			self.exec(commands.image.add, options["name"], options["username"], options["password"])
@@ -111,7 +125,7 @@ class ClientController(Controller):
 			self.socket.send_obj({"success": False, "error":["Unknown command"]})
 
 	def vm_execute(self):
-		cmd = socket.recv_cmd()
+		cmd = self.socket.recv_cmd()
 		if cmd == CMD_CLIENT_VM_SHELL:
 			self.exec(commands.vm.shell)
 		elif cmd == CMD_CLIENT_VM_START:

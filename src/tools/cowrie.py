@@ -4,12 +4,13 @@ from string import Template
 
 # Internal
 from common.utils.files import *
+from common.utils.logs import *
 from common.utils.system import *
 import common.utils.settings as settings
 
 class CowrieController:
 	def __init__(self):
-		pass
+		log(INFO, "CowrieController.__init__: creating the CowrieController")
 
 	def __del__(self):
 		pass
@@ -81,7 +82,7 @@ class CowrieController:
 				except:
 					log(WARNING, "Failed to stop a cowrie instance. The pid file is: "+str(pidpath))
 
-	def running_cowries():
+	def running_cowries(self):
 		# code from https://stackoverflow.com/questions/2632205/how-to-count-the-number-of-files-in-a-directory-using-python#2632251
 		DIR = to_root_path("run/cowrie/pid")
 		nb_pids = len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name)) and name.endswith(".pid") and read_pid_file(os.path.join(DIR, name))])

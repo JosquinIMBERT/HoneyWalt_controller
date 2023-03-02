@@ -3,10 +3,12 @@ import argparse, os, select, socket, sys, threading, time
 
 # Internal
 from common.utils.files import *
+from common.utils.logs import *
 import common.utils.settings as settings
 
 class TrafficController:
 	def __init__(self):
+		log(INFO, "TrafficController.__init__: creating the TrafficController")
 		self.traffic_shaper = TrafficShaper()
 		self.traffic_shaper.tcp_host = "0.0.0.0"
 		self.traffic_shaper.tcp_port = settings.get("WG_TCP_PORT")

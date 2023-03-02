@@ -3,12 +3,14 @@ import os, sys
 
 # Internal
 from common.door.proto import *
-from door.sock import DoorSocket
 from common.utils.controller import Controller
+from common.utils.logs import *
 from common.utils.misc import get_public_ip
+from door.sock import DoorSocket
 
 class DoorController(Controller):
 	def __init__(self, door):
+		log(DEBUG, "DoorController.__init__: creating the DoorController for "+str(door["host"]))
 		self.door = door
 		self.socket = DoorSocket()
 
@@ -17,7 +19,7 @@ class DoorController(Controller):
 		del self.door
 
 	def connect(self):
-		self.socket.connect(self.door["ip"], self.door["port"])
+		self.socket.connect(self.door["host"], self.door["realssh"])
 
 	# CMD_DOOR_LIVE
 	def connected(self):

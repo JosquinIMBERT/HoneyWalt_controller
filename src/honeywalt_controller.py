@@ -1,9 +1,10 @@
 # External
-import signal
+import argparse, signal, threading
 
 # Internal
 from client.controller import ClientController
 from common.utils.files import *
+from common.utils.logs import *
 from config import get_conf
 from door.global_controller import DoorGlobalController
 import glob
@@ -18,6 +19,7 @@ def handle(signum, frame):
 class ControllerServer:
 	"""ControllerServer"""
 	def __init__(self):
+		log(INFO, "ControllerServer.__init__: creating the ControllerServer")
 		glob.init(
 			self,
 			get_conf(),
@@ -35,9 +37,8 @@ class ControllerServer:
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C
 
 	def start(self):
-		self.DOORS_CONTROLLER.start()
-		self.VM_CONTROLLER.start()
 		self.CLIENT_CONTROLLER.start()
+		self.CLIENT_CONTROLLER.run()
 
 	def stop(self):
 		self.CLIENT_CONTROLLER.stop()
@@ -47,5 +48,15 @@ class ControllerServer:
 		self.TUNNELS_CONTROLLER.stop()
 
 if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='HoneyWalt Controller Daemon')
+	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
+
+	options = parser.parse_args()
+	if options.log_level is not None:
+		log_level = options.log_level[0]
+		set_log_level(log_level)
+
+	threading.current_thread().name = "MainThread"
+
 	controller_server = ControllerServer()
 	controller_server.start()

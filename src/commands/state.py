@@ -6,7 +6,6 @@ from config import *
 import glob
 from common.utils.logs import *
 from common.utils.misc import *
-from control_socket import ControlSocket
 
 
 # Start HoneyWalt
@@ -32,6 +31,9 @@ def start():
 
 	if glob.CONFIG["need_commit"] == "True":
 		res["msg"] = "warning: you have uncommited changes. Running with the previous commited configuration"
+
+	glob.SERVER.DOORS_CONTROLLER.reload()
+	self.DOORS_CONTROLLER.start()
 
 
 	#####################
@@ -279,7 +281,7 @@ def status():
 		res["answer"]["vm_pid"] = vm_pid
 	
 	# Cowrie
-	nb_cowrie_pids = glob.SERVER.COWRIE_CONTROLLER.state()
+	nb_cowrie_pids = glob.SERVER.COWRIE_CONTROLLER.running_cowries()
 	res["answer"]["cowrie_instances"] = nb_cowrie_pids
 	
 	# Configuration

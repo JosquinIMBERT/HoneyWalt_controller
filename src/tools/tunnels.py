@@ -4,12 +4,13 @@ from string import Template
 
 # Internal
 from common.utils.files import *
+from common.utils.logs import *
 import common.utils.settings as settings
 from common.utils.system import *
 
 class TunnelsController:
 	def __init__(self):
-		pass
+		log(INFO, "TunnelsController.__init__: creating the TunnelsController")
 
 	def __del__(self):
 		pass

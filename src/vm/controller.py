@@ -4,11 +4,14 @@ import os, sys
 # Internal
 from common.utils.controller import Controller
 from common.utils.files import *
+from common.utils.logs import *
+from common.utils.system import *
 from common.vm.proto import *
 from vm.sock import VMSocket
 
 class VMController(Controller):
 	def __init__(self):
+		log(INFO, "VMController.__init__: creating the VMController")
 		self.socket = VMSocket()
 		self.phase = None
 

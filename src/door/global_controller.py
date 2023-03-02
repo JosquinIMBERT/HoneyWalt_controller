@@ -2,17 +2,28 @@
 import os, sys
 
 # Internal
+from common.utils.logs import *
 from door.controller import DoorController
+import glob
 
 class DoorGlobalController:
-	def __init__(self, doors):
+	def __init__(self):
+		log(INFO, "DoorGlobalController.__init__: creating the DoorGlobalController")
 		self.controllers = {}
-		for door in doors:
+		for door in glob.RUN_CONFIG["door"]:
 			self.controllers[str(door["id"])] = DoorController(door)
 
 	def __del__(self):
 		for door_id, controller in self.controllers.items():
 			del controller
+
+	def reload(self):
+		log(INFO, "DoorGlobalController.reload: reloading the DoorGlobalController")
+		for door_id, controller in self.controllers.items():
+			del controller
+		self.controllers = {}
+		for door in glob.RUN_CONFIG["door"]:
+			self.controllers[str(door["id"])] = DoorController(door)
 
 	def start(self):
 		for door_id, controller in self.controllers.items():
