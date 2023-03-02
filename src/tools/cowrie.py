@@ -3,9 +3,9 @@ import os
 from string import Template
 
 # Internal
-from utils.files import *
-from utils.system import *
-import utils.settings as settings
+from common.utils.files import *
+from common.utils.system import *
+import common.utils.settings as settings
 
 class CowrieController:
 	def __init__(self):

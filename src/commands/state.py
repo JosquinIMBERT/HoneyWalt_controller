@@ -4,8 +4,8 @@ import os, sys, time
 # Internal
 from config import *
 import glob
-from utils.logs import *
-from utils.misc import *
+from common.utils.logs import *
+from common.utils.misc import *
 from control_socket import ControlSocket
 
 

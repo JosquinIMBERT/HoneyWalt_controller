@@ -2,8 +2,8 @@
 import os, socket, sys, time
 
 # Internal
-from utils.logs import *
-from utils.sockets import ProtoSocket
+from common.utils.logs import *
+from common.utils.sockets import ProtoSocket
 
 class DoorSocket(ProtoSocket):
 	def __init__(self):

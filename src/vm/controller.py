@@ -2,10 +2,10 @@
 import os, sys
 
 # Internal
-from utils.files import *
+from common.utils.controller import Controller
+from common.utils.files import *
 from vm.proto import *
 from vm.sock import VMSocket
-from utils.controller import Controller
 
 class VMController(Controller):
 	def __init__(self):

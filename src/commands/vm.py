@@ -3,7 +3,7 @@ import os, re, sys, time
 
 # Internal
 import tools.vm as vm
-from utils.logs import *
+from common.utils.logs import *
 import glob
 
 def shell():

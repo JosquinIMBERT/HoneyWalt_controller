@@ -3,7 +3,7 @@ import os, re, sys
 
 # Internal
 import glob
-from utils.logs import *
+from common.utils.logs import *
 
 
 def add(name, mac, image, ports=[]):

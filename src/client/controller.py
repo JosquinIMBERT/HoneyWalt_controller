@@ -5,7 +5,7 @@ import os, sys
 from client.proto import *
 from client.sock import ClientSocket
 import commands
-from utils.controller import Controller
+from common.utils.controller import Controller
 
 class ClientController(Controller):
 	def __init__(self):

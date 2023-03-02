@@ -4,8 +4,8 @@ import os, sys
 # Internal
 from door.proto import *
 from door.sock import DoorSocket
-from utils.controller import Controller
-from utils.misc import get_public_ip
+from common.utils.controller import Controller
+from common.utils.misc import get_public_ip
 
 class DoorController(Controller):
 	def __init__(self, door):

@@ -3,7 +3,7 @@ import os, sys
 
 # Internal
 import glob
-from utils.misc import *
+from common.utils.misc import *
 
 
 def add(ip, dev):

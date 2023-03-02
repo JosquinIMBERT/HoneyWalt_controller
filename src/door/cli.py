@@ -7,7 +7,7 @@ import glob
 from config import get_conf
 from door.proto import *
 from door.controller import *
-from utils.files import *
+from common.utils.files import *
 
 class DoorControllerClient:
 	def __init__(self, door):

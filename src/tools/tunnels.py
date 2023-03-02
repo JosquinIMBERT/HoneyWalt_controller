@@ -3,9 +3,9 @@ from sshtunnel import SSHTunnelForwarder
 from string import Template
 
 # Internal
-from utils.files import *
-import utils.settings as settings
-from utils.system import *
+from common.utils.files import *
+import common.utils.settings as settings
+from common.utils.system import *
 
 class TunnelsController:
 	def __init__(self):

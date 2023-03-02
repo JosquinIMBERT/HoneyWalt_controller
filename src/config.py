@@ -1,8 +1,10 @@
+# External
 import json, shutil, sys
 from os.path import exists
 
-from utils.files import *
-from utils.logs import *
+# Internal
+from common.utils.files import *
+from common.utils.logs import *
 
 def open_conf(file, write=False):
 	if file is None:

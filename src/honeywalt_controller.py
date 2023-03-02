@@ -6,7 +6,7 @@ import glob
 from tools.cowrie import CowrieController
 from tools.traffic import TrafficController
 from tools.tunnels import TunnelsController
-from utils.files import *
+from common.utils.files import *
 from vm.controller import VMController
 
 def handle(signum, frame):

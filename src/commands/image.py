@@ -3,8 +3,8 @@ import os, re, sys
 
 # Internal
 import glob
-from utils.logs import *
-from utils.misc import *
+from common.utils.logs import *
+from common.utils.misc import *
 
 
 def add(name, username="root", password="root"):

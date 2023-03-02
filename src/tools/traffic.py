@@ -2,8 +2,8 @@
 import argparse, os, select, socket, sys, threading, time
 
 # Internal
-from utils.files import *
-import utils.settings as settings
+from common.utils.files import *
+import common.utils.settings as settings
 
 class TrafficController:
 	def __init__(self):
