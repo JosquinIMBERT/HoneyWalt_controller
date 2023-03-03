@@ -3,6 +3,7 @@ import os, re, sys, time
 
 # Internal
 from common.utils.logs import *
+import common.utils.settings as settings
 import glob
 
 def shell():
