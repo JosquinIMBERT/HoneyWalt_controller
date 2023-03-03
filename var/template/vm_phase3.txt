@@ -1,0 +1,15 @@
+qemu-system-x86_64 \
+	-name olim \
+	-pidfile ${pidfile} \
+	-enable-kvm \
+	-cpu host \
+	-m 1G \
+	-drive file=${diskfile},index=1,format=raw,media=disk,snapshot=on \
+	-drive file=${swapfile},index=2,format=raw,media=disk \
+	-drive file=${wimgfile},index=3,format=raw,media=disk,snapshot=on \
+	-netdev tap,id=waltout,ifname=tap-out,script=${tapout_up},downscript=${tapout_down} \
+	-device e1000,netdev=waltout \
+	-netdev bridge,id=waltnet,br=walt-net \
+	-device virtio-net,netdev=waltnet \
+	-device vhost-vsock-pci,guest-cid=3 \
+	-vnc none &

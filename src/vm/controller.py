@@ -28,6 +28,7 @@ class VMController(Controller):
 		return read_pid_file(to_root_path("run/vm.pid"))
 
 	def start(self, phase):
+		self.phase = phase
 		# Starting the VM
 		with open(to_root_path("var/template/vm_phase"+str(phase)+".txt"), "r") as temp_file:
 			template = Template(temp_file.read())
