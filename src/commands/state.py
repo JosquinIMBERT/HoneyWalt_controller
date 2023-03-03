@@ -168,8 +168,8 @@ def commit(regen=True, force=False):
 		door = find(glob.CONFIG["door"], door_key["host"], "host")
 		doors += [{
 			"ip":settings.get("IP_FOR_DMZ"),
-			"door":settings.get("WIREGUARD_PORTS")+int(door["id"]),
-			"dev":door["dev"],
+			"port":settings.get("WIREGUARD_PORTS")+int(door["id"]),
+			"dev_id":door["dev_id"],
 			"wg_pubkey":door_key["wg_pubkey"]
 		}]
 
