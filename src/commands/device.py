@@ -4,6 +4,7 @@ import os, re, sys
 # Internal
 import glob
 from common.utils.logs import *
+from common.utils.misc import *
 
 
 def add(name, mac, image, ports=[]):
@@ -15,7 +16,7 @@ def add(name, mac, image, ports=[]):
 		image = extract_short_name(image)
 
 	if find(glob.CONFIG["device"], name, "node") is not None or \
-	   find(glob.CONFIG["device"], mac_addr, "mac") is not None:
+	   find(glob.CONFIG["device"], mac, "mac") is not None:
 		res["success"] = False
 		res["error"] = ["device already exists"]
 		return res
@@ -35,7 +36,7 @@ def add(name, mac, image, ports=[]):
 	new_dev = {
 		"node":name,
 		"image":image,
-		"mac":mac_addr,
+		"mac":mac,
 		"ports":ports,
 		"id": dev_id
 	}
