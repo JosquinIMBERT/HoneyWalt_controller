@@ -1,5 +1,4 @@
 {
-	"comment_to_delete": "#TODO: ports, files locations, username_default, password_default...",
 	"LISTEN_PORTS": 2000,
 	"BACKEND_PORTS": 3000,
 	"SOCKET_PORTS": 4000,
