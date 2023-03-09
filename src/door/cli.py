@@ -91,7 +91,7 @@ def main():
 		port = int(options.port[0])
 
 	glob.init(None, get_conf(), to_root_path("var/key/id_olim"), to_root_path("var/key/id_olim.pub"), to_root_path("var/key/id_door"), to_root_path("var/key/id_door.pub"))
-	cli = DoorControllerClient({"ip":ip, "port":port})
+	cli = DoorControllerClient({"host":ip, "port":port})
 	cli.run()
 
 if __name__ == '__main__':

@@ -37,15 +37,14 @@ class TrafficController:
 		prog = to_root_path("src/script/control-up.sh")
 		args = dev+" "+IP_FOR_DMZ+" "+latency+" "+throughput+" "+ports
 		command = prog+" "+args
-		run(command, "failed to start traffic control")
+		if not run(command):
+			log(ERROR, "TrafficController.start_control: failed to start traffic control")
 
 	def stop_control(self):
 		prog = to_root_path("src/script/control-down.sh")
 		command = prog+" tap-out"
-		try:
-			run(command, "failed to stop control")
-		except:
-			log(WARNING,"Failed to stop traffic control.")
+		if not run(command):
+			log(ERROR,"TrafficController.stop_control: failed to stop traffic control")
 
 
 

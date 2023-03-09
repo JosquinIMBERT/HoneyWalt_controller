@@ -59,7 +59,8 @@ class CowrieController:
 		delete(to_root_path("run/cowrie/pid"), suffix=".pid")
 
 		# Allow cowrie user to access cowrie files
-		run("chown -R cowrie "+to_root_path("run/cowrie/"), "failed chown cowrie")
+		if not run("chown -R cowrie "+to_root_path("run/cowrie/")):
+			log(ERROR, "CowrieController.init_run: failed chown cowrie")
 
 	def start_cowrie(self):
 		# TODO: try to start cowrie without a shell command
@@ -71,7 +72,8 @@ class CowrieController:
 				"pid_path": to_root_path("run/cowrie/pid/"+dev["id"]+".pid"),
 				"log_path": to_root_path("run/cowrie/log/"+dev["id"]+".log")
 			})
-			run(cmd, "failed to start cowrie")
+			if not run(cmd):
+				log(ERROR, "CowrieController.strat_cowrie: failed to start cowrie")
 
 	def stop(self):
 		path = to_root_path("run/cowrie/pid")

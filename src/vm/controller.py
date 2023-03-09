@@ -40,7 +40,8 @@ class VMController(Controller):
 			"tapout_up": to_root_path("src/script/tapout-up.sh"),
 			"tapout_down": to_root_path("src/script/tapout-down.sh")
 		})
-		run(vm_cmd, "failed to start the VM")
+		if not run(vm_cmd):
+			log(ERROR, "VMController.start: failed to start the VM")
 
 	def stop(self):
 		self.phase = None

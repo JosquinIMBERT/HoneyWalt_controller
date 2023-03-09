@@ -117,8 +117,8 @@ class TunnelsController:
 			"host": door["host"],
 			"realssh_port": door["realssh"]
 		})
-		error_msg = "failed to start tunnel between door and controller"
-		run(tunnel_cmd, error_msg)
+		if not run(tunnel_cmd):
+			log(ERROR, "TunnelsController.start_tunnel_door_controller: failed to start tunnel between door and controller")
 
 	def start_tunnel_controller_dmz(self, socketdir, local_port, dev_ip, dev_port):
 		# TODO: use sshtunnels library
@@ -137,8 +137,8 @@ class TunnelsController:
 			"vm_ip": VM_IP,
 			"key_path": glob.VM_PRIV_KEY
 		})
-		error_msg = "failed to start tunnel between controller and dmz"
-		run(tunnel_cmd, error_msg)
+		if not run(tunnel_cmd):
+			log(ERROR, "TunnelsController.start_tunnel_controller_dmz: failed to start tunnel between controller and dmz")
 
 
 	#######################

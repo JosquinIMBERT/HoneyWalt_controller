@@ -19,7 +19,7 @@ class DoorController(Controller):
 		del self.door
 
 	def connect(self):
-		self.socket.connect(self.door["host"], self.door["realssh"])
+		self.socket.connect(self.door["host"], DOOR_PORT)
 
 	# CMD_DOOR_LIVE
 	def connected(self):
