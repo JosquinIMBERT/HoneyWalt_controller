@@ -13,8 +13,8 @@ class DoorControllerClient:
 	def __init__(self, door):
 		self.controller = DoorController(door)
 		self.controller.connect()
-		self.help = len(DOOR_COMMANDS)
-		self.quit = len(DOOR_COMMANDS)+1
+		self.help = len(DOOR_COMMANDS)+1
+		self.quit = len(DOOR_COMMANDS)+2
 
 	def __del__(self):
 		del self.controller
