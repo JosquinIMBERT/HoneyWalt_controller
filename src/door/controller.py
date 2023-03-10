@@ -23,10 +23,7 @@ class DoorController(Controller):
 
 	# CMD_DOOR_LIVE
 	def connected(self):
-		if self.socket.connected():
-			return self.socket.exchange(commands=[CMD_DOOR_LIVE])
-		else:
-			return False
+		return self.socket.exchange(commands=[CMD_DOOR_LIVE])
 
 	# CMD_DOOR_FIREWALL_UP
 	def firewall_up(self):
