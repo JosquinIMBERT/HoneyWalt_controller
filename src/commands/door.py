@@ -3,6 +3,7 @@ import os, sys
 
 # Internal
 import glob
+from common.utils.logs import *
 from common.utils.misc import *
 
 
@@ -13,14 +14,14 @@ def add(ip, dev):
 	device = find(glob.CONFIG["device"], dev, "node")
 	if device is None:
 		res["success"] = False
-		res["error"] = ["device not found"]
+		res[ERROR] = ["device not found"]
 		return res
 
 	# Check door doesn't exist
 	door = find(glob.CONFIG["door"], ip, "host")
 	if door is not None:
 		res["success"] = False
-		res["error"] = ["door already exists"]
+		res[ERROR] = ["door already exists"]
 		return res
 
 	# Compute door ID
@@ -50,14 +51,14 @@ def chg(ip, new_ip=None, new_dev=None):
 
 	if new_ip is None and new_dev is None:
 		res["success"] = False
-		res["error"] = ["no new value was given"]
+		res[ERROR] = ["no new value was given"]
 		return res
 
 	# Find the door
 	door = find(glob.CONFIG["door"], ip, "host")
 	if door is None:
 		res["success"] = False
-		res["error"] = ["door not found"]
+		res[ERROR] = ["door not found"]
 		return res
 
 	# Update the fields
@@ -83,7 +84,7 @@ def delete(ip):
 	door = find_id(glob.CONFIG["door"], ip, "host")
 	if door == -1:
 		res["success"] = False
-		res["error"] = ["door not found"]
+		res[ERROR] = ["door not found"]
 		return res
 
 	del glob.CONFIG["door"][door]

@@ -64,7 +64,7 @@ class ClientController(Controller):
 		elif cmd == CMD_CLIENT_STATUS:
 			self.exec(commands.state.status)
 		else:
-			self.socket.send_obj({"success": False, "error":["Unknown command"]})
+			self.socket.send_obj({"success": False, ERROR:["Unknown command"]})
 
 	def door_execute(self):
 		cmd = self.socket.recv_cmd()
@@ -80,7 +80,7 @@ class ClientController(Controller):
 		elif cmd == CMD_CLIENT_DOOR_SHOW:
 			self.exec(commands.door.show)
 		else:
-			self.socket.send_obj({"success": False, "error":["Unknown command"]})
+			self.socket.send_obj({"success": False, ERROR:["Unknown command"]})
 
 	def ctrl_execute(self):
 		cmd = self.socket.recv_cmd()
@@ -90,7 +90,7 @@ class ClientController(Controller):
 		elif cmd == CMD_CLIENT_CTRL_SHOW:
 			self.exec(commands.controller.show)
 		else:
-			self.socket.send_obj({"success": False, "error":["Unknown command"]})
+			self.socket.send_obj({"success": False, ERROR:["Unknown command"]})
 
 	def dev_execute(self):
 		cmd = self.socket.recv_cmd()
@@ -106,7 +106,7 @@ class ClientController(Controller):
 		elif cmd == CMD_CLIENT_DEV_SHOW:
 			self.exec(commands.device.show)
 		else:
-			self.socket.send_obj({"success": False, "error":["Unknown command"]})
+			self.socket.send_obj({"success": False, ERROR:["Unknown command"]})
 
 	def img_execute(self):
 		cmd = self.socket.recv_cmd()
@@ -122,7 +122,7 @@ class ClientController(Controller):
 		elif cmd == CMD_CLIENT_IMG_SHOW:
 			self.exec(commands.image.show)
 		else:
-			self.socket.send_obj({"success": False, "error":["Unknown command"]})
+			self.socket.send_obj({"success": False, ERROR:["Unknown command"]})
 
 	def vm_execute(self):
 		cmd = self.socket.recv_cmd()
@@ -134,7 +134,7 @@ class ClientController(Controller):
 		elif cmd == CMD_CLIENT_VM_STOP:
 			self.exec(commands.vm.stop)
 		else:
-			self.socket.send_obj({"success": False, "error":["Unknown command"]})
+			self.socket.send_obj({"success": False, ERROR:["Unknown command"]})
 
 	def stop(self):
 		self.keep_running = False

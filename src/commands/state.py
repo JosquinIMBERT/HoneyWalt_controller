@@ -20,7 +20,7 @@ def start():
 
 	if glob.SERVER.VM_CONTROLLER.pid() is not None:
 		res["success"] = False
-		res["error"] = ["please stop HoneyWalt before to start"]
+		res[ERROR] = ["please stop HoneyWalt before to start"]
 		return res
 
 
@@ -31,7 +31,7 @@ def start():
 	glob.RUN_CONFIG = get_conf()
 
 	if glob.CONFIG["need_commit"] == "True":
-		res["warning"] = ["warning: you have uncommited changes. Running with the previous commited configuration"]
+		res[WARNING] = ["warning: you have uncommited changes. Running with the previous commited configuration"]
 
 	glob.SERVER.DOORS_CONTROLLER.reload()
 	self.DOORS_CONTROLLER.start()
@@ -61,7 +61,7 @@ def start():
 
 	if not ips:
 		res["success"] = False
-		res["error"] = ["failed to get devices IPs"]
+		res[ERROR] = ["failed to get devices IPs"]
 		return res
 
 	for ip in ips:
@@ -144,16 +144,16 @@ def commit(regen=True, force=False):
 
 	if glob.SERVER.VM_CONTROLLER.pid() is not None:
 		res["success"] = False
-		res["error"] = ["please stop HoneyWalt before to commit"]
+		res[ERROR] = ["please stop HoneyWalt before to commit"]
 		return res
 
 	if glob.CONFIG["need_commit"] == "Empty":
 		res["success"] = False
-		res["error"] = ["Your configuration is empty"]
+		res[ERROR] = ["Your configuration is empty"]
 		return res
 	elif glob.CONFIG["need_commit"] == "False" and not force:
 		res["success"] = False
-		res["error"] = ["Nothing new to commit"]
+		res[ERROR] = ["Nothing new to commit"]
 		return res
 
 	if regen:
