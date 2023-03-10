@@ -8,6 +8,7 @@ from config import get_conf
 from common.door.proto import *
 from door.controller import *
 from common.utils.files import *
+from common.utils.logs import *
 
 class DoorControllerClient:
 	def __init__(self, door):
@@ -80,11 +81,15 @@ def main():
 	parser = argparse.ArgumentParser(description='HoneyWalt Door Client: test the door protocol from a command line interface')
 	parser.add_argument("-a", "--ip-address", nargs=1, help="IP address of the door")
 	parser.add_argument("-p", "--port", nargs=1, help="Port where the door listens")
+	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (CMD, DEBUG, INFO, WARNING, ERROR, FATAL)")
 	options = parser.parse_args()
 
 	ip = "127.0.0.1"
 	port = 5556
 
+	if options.log_level is not None:
+		log_level = options.log_level[0]
+		set_log_level(log_level)
 	if options.ip_address is not None:
 		ip = options.ip_address[0]
 	if options.port is not None:
