@@ -24,49 +24,41 @@ class DoorController(Controller):
 	# CMD_DOOR_LIVE
 	def connected(self):
 		if self.socket.connected():
-			self.socket.send_cmd(CMD_DOOR_LIVE)
-			return self.socket.get_answer()
+			return self.socket.exchange(commands=[CMD_DOOR_LIVE])
 		else:
 			return False
 
 	# CMD_DOOR_FIREWALL_UP
 	def firewall_up(self):
-		self.socket.send_cmd(CMD_DOOR_FIREWALL_UP)
-		res = self.socket.get_answer()
-		return res
+		return self.socket.exchange(commands=[CMD_DOOR_FIREWALL_UP])
 
 	# CMD_DOOR_FIREWALL_DOWN
 	def firewall_down(self):
-		self.socket.send_cmd(CMD_DOOR_FIREWALL_DOWN)
-		return self.socket.get_answer()
+		return self.socket.exchange(commands=[CMD_DOOR_FIREWALL_DOWN])
 
 	# CMD_DOOR_WG_KEYGEN
 	def wg_keygen(self):
-		self.socket.send_cmd(CMD_DOOR_WG_KEYGEN)
-		return self.socket.get_answer()
+		return self.socket.exchange(commands=[CMD_DOOR_WG_KEYGEN])
 
 	# CMD_DOOR_WG_UP
 	def wg_up(self):
-		self.socket.send_cmd(CMD_DOOR_WG_UP)
-		return self.socket.get_answer()
+		return self.socket.exchange(commands=[CMD_DOOR_WG_UP])
 
 	# CMD_DOOR_WG_DOWN
 	def wg_down(self):
-		self.socket.send_cmd(CMD_DOOR_WG_DOWN)
-		return self.socket.get_answer()
+		return self.socket.exchange(commands=[CMD_DOOR_WG_DOWN])
 
 	# CMD_DOOR_WG_ADD_PEER
 	def wg_add_peer(self, pubkey, dev_id):
-		self.socket.send_cmd(CMD_DOOR_WG_ADD_PEER)
-		self.socket.send_obj({"pubkey":pubkey, "id": dev_id})
-		return self.socket.get_answer()
+		return self.socket.exchange(
+			commands=[CMD_DOOR_WG_ADD_PEER],
+			data={"pubkey":pubkey, "id": dev_id}
+		)
 
 	# CMD_DOOR_TRAFFIC_SHAPER_UP
 	def traffic_shaper_up(self):
-		self.socket.send_cmd(CMD_DOOR_TRAFFIC_SHAPER_UP)
-		return self.socket.get_answer()
+		return self.socket.exchange(commands=[CMD_DOOR_TRAFFIC_SHAPER_UP])
 
 	# CMD_DOOR_TRAFFIC_SHAPER_DOWN
 	def traffic_shaper_down(self):
-		self.socket.send_cmd(CMD_DOOR_TRAFFIC_SHAPER_DOWN)
-		return self.socket.get_answer()
+		return self.socket.exchange(commands=[CMD_DOOR_TRAFFIC_SHAPER_DOWN])
