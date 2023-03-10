@@ -26,7 +26,7 @@ class DoorControllerClient:
 				print("\t-  "+str(DOOR_COMMANDS[key])+" - "+str(key)+" <pubkey> <dev_id>")
 			else:
 				print("\t-  "+str(DOOR_COMMANDS[key])+" - "+str(key))
-		print("\t-  "+str(self.help)+" - HELP")
+		print("\t- "+str(self.help)+" - HELP")
 		print("\t- "+str(self.quit)+" - QUIT")
 
 	def execute(self, cmd, line):
