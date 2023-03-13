@@ -1,11 +1,12 @@
 # External
-import fileinput, os, sys
+import argparse, fileinput, os, sys
 
 # Internal
 sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 from config import get_conf
 from common.utils.files import *
+from common.utils.logs import *
 from common.vm.proto import *
 from vm.controller import *
 
@@ -13,8 +14,8 @@ class VMControllerClient:
 	def __init__(self):
 		self.controller = VMController()
 		self.controller.connect()
-		self.help = len(VM_COMMANDS)
-		self.quit = len(VM_COMMANDS)+1
+		self.help = len(VM_COMMANDS)+1
+		self.quit = len(VM_COMMANDS)+2
 
 	def __del__(self):
 		del self.controller
@@ -94,6 +95,14 @@ class VMControllerClient:
 				self.execute(cmd)
 
 def main():
+	parser = argparse.ArgumentParser(description='HoneyWalt VM Client: test the VM protocol from a command line interface')
+	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (CMD, DEBUG, INFO, WARNING, ERROR, FATAL)")
+	options = parser.parse_args()
+
+	if options.log_level is not None:
+		log_level = options.log_level[0]
+		set_log_level(log_level)
+	
 	glob.init(None, get_conf(), to_root_path("var/key/id_olim"), to_root_path("var/key/id_olim.pub"), to_root_path("var/key/id_door"), to_root_path("var/key/id_door.pub"))
 	cli = VMControllerClient()
 	cli.run()

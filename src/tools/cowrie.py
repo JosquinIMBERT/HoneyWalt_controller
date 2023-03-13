@@ -6,6 +6,7 @@ from string import Template
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
+from common.utils.misc import *
 import common.utils.settings as settings
 
 class CowrieController:
@@ -89,3 +90,10 @@ class CowrieController:
 		DIR = to_root_path("run/cowrie/pid")
 		nb_pids = len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name)) and name.endswith(".pid") and read_pid_file(os.path.join(DIR, name))])
 		return nb_pids
+
+	# Listen the logs for a given device name
+	# Print the output to stdout
+	# This may be piped into another program that analyzes the logs from its standard input
+	def read_logs(self, dev):
+		device = find(glob.RUN_CONFIG, dev, "node")
+		run("nc -lp "+dev["id"])

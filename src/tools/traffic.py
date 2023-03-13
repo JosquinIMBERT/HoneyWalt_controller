@@ -1,6 +1,8 @@
 # External
 import argparse, os, select, socket, sys, threading, time
 
+# TODO: Use python-iptables and shapy (pip3 install --upgrade python-iptables && pip3 install shapy)
+
 # Internal
 from common.utils.files import *
 from common.utils.logs import *

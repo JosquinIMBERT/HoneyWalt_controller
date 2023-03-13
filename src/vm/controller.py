@@ -1,5 +1,5 @@
 # External
-import os, sys, threading
+import os, sys, threading, time
 
 # Internal
 from common.utils.controller import Controller
@@ -7,12 +7,12 @@ from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
 from common.vm.proto import *
-from vm.sock import VMSocket
+from common.utils.sockets import ServerSocket
 
 class VMController(Controller):
 	def __init__(self):
 		log(INFO, "VMController.__init__: creating the VMController")
-		self.socket = VMSocket()
+		self.socket = ServerSocket(addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK)
 		self.phase = None
 
 	def __del__(self):
@@ -40,8 +40,12 @@ class VMController(Controller):
 			"tapout_up": to_root_path("src/script/tapout-up.sh"),
 			"tapout_down": to_root_path("src/script/tapout-down.sh")
 		})
+		# Starting the VM
 		if not run(vm_cmd):
-			log(ERROR, "VMController.start: failed to start the VM")
+			log(ERROR, self.name()+".start: failed to start the VM")
+		# Waiting for the VM to connect
+		if not self.connect():
+			log(ERROR, self.name()+".start: failed to accept the VM connection")
 
 	def stop(self):
 		self.phase = None
@@ -57,8 +61,21 @@ class VMController(Controller):
 		if not self.pid():
 			timer.cancel()
 
-	def connect(self):
-		self.socket.connect()
+	# Bind the socket and accept a new connection
+	#	retry: number of times we will try to bind the socket (if the VM takes time to boot, the bind operation will fail)
+	#	sleep: duration (in seconds) to sleep before we retry to bind
+	def connect(self, retry=15, sleep=3):
+		retries = 0
+		while retries <= retry:
+			if not self.socket.bind(): # Failed to bind
+				log(DEBUG, self.name()+".connect: failed to bind socket, VM probably failed to boot")
+				time.sleep(sleep)
+			else: # Successful bind
+				break
+			retries += 1
+		if retries>retry:
+			return False
+		return self.socket.accept(timeout=240)
 
 
 	#############################
