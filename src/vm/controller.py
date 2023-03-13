@@ -12,7 +12,7 @@ from common.utils.sockets import ServerSocket
 class VMController(Controller):
 	def __init__(self):
 		log(INFO, "VMController.__init__: creating the VMController")
-		self.socket = ServerSocket(addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK)
+		self.socket = ServerSocket(CONTROL_PORT, addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK)
 		self.phase = None
 
 	def __del__(self):
