@@ -84,7 +84,7 @@ class VMControllerClient:
 	def run(self):
 		self.print_help()
 
-		for line in fileinput.input():
+		for line in fileinput.input(files=[]):
 			cmd = int(line)
 			if cmd == self.help:
 				self.print_help()
