@@ -23,12 +23,12 @@ class VMControllerClient:
 		print("Enter one of the following numbers:")
 		for key in VM_COMMANDS:
 			spaces = " " * (3-len(str(VM_COMMANDS[key])))
-			if DOOR_COMMANDS[key] == CMD_VM_PHASE:
-				print("\t-"+spaces+str(DOOR_COMMANDS[key])+" - "+str(key)+" <phase>")
-			elif DOOR_COMMANDS[key] == CMD_VM_WALT_DEVS:
-				print("\t-"+spaces+str(DOOR_COMMANDS[key])+" - "+str(key)+" [<name>,<image>,<username>,<password>,<mac_addr> ...]")
-			elif DOOR_COMMANDS[key] == CMD_VM_WG_DOORS:
-				print("\t-"+spaces+str(DOOR_COMMANDS[key])+" - "+str(key)+" [<host>,<port>,<pubkey> ...]")
+			if VM_COMMANDS[key] == CMD_VM_PHASE:
+				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key)+" <phase>")
+			elif VM_COMMANDS[key] == CMD_VM_WALT_DEVS:
+				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key)+" [<name>,<image>,<username>,<password>,<mac_addr> ...]")
+			elif VM_COMMANDS[key] == CMD_VM_WG_DOORS:
+				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key)+" [<host>,<port>,<pubkey> ...]")
 			else:
 				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key))
 		print("\t- "+str(self.help)+" - HELP")
