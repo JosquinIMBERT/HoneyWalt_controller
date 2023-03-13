@@ -13,7 +13,6 @@ from vm.controller import *
 class VMControllerClient:
 	def __init__(self):
 		self.controller = VMController()
-		self.controller.connect()
 		self.help = len(VM_COMMANDS)+1
 		self.quit = len(VM_COMMANDS)+2
 
@@ -23,50 +22,49 @@ class VMControllerClient:
 	def print_help(self):
 		print("Enter one of the following numbers:")
 		for key in VM_COMMANDS:
-			print("\t-  "+str(VM_COMMANDS[key])+" - "+str(key))
+			spaces = " " * (3-len(str(VM_COMMANDS[key])))
+			if DOOR_COMMANDS[key] == CMD_VM_PHASE:
+				print("\t-"+spaces+str(DOOR_COMMANDS[key])+" - "+str(key)+" <phase>")
+			elif DOOR_COMMANDS[key] == CMD_VM_WALT_DEVS:
+				print("\t-"+spaces+str(DOOR_COMMANDS[key])+" - "+str(key)+" [<name>,<image>,<username>,<password>,<mac_addr> ...]")
+			elif DOOR_COMMANDS[key] == CMD_VM_WG_DOORS:
+				print("\t-"+spaces+str(DOOR_COMMANDS[key])+" - "+str(key)+" [<host>,<port>,<pubkey> ...]")
+			else:
+				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key))
 		print("\t- "+str(self.help)+" - HELP")
 		print("\t- "+str(self.quit)+" - QUIT")
 
-	def execute(self, cmd):
+	def execute(self, cmd, line):
 		if cmd == CMD_VM_PHASE:
-			print("Enter phase > ")
-			phase = int(fileinput.input())
-			print(self.controller.send_phase(phase))
+			try: phase=int(line)
+			except: log(ERROR, "invalid phase")
+			else:
+				log(INFO, "Starting the VM in phase "+phase)
+				self.controller.start(phase)
+				print(self.controller.send_phase(phase))
 		elif cmd == CMD_VM_WALT_DEVS:
-			# Get info
-			print("Enter name > ")
-			name = fileinput.input()
-			print("Enter image > ")
-			image = fileinput.input()
-			print("Enter username > ")
-			username = fileinput.input()
-			print("Enter password > ")
-			password = fileinput.input()			
-			print("Enter MAC address > ")
-			mac = fileinput.input()
 			# Build object
-			dev = {"name":name, "image":image, "username":username, "password":password, "mac":mac}
+			devs = []
+			for dev in devs:
+				dev = dev.split(",")
+				if len(dev) != 5:
+					log(ERROR, "invalid device")
+					continue
+				devs += [{"name":dev[0], "image":dev[1], "username":dev[2], "password":dev[3], "mac":dev[4]}]
 			# Send
-			print(self.controller.send_device())
+			print(self.controller.send_devices(devs))
 		elif cmd == CMD_VM_WALT_IPS:
 			print(self.controller.get_ips())
 		elif cmd == CMD_VM_WG_KEYGEN:
 			print(self.controller.wg_keygen())
 		elif cmd == CMD_VM_WG_DOORS:
 			doors = []
-			while True:
-				print("Do you want to add more doors? (y/N)")
-				more = fileinput.input()
-				if more == "y" or more =="Y":
-					print("Enter door IP address >")
-					ip = fileinput.input()
-					print("Enter door port >")
-					port = fileinput.input()
-					print("Enter door wireguard pubkey >")
-					key = fileinput.input()
-					doors += [{"ip":ip, "port":port, "wg_pubkey": key}]
-				else:
-					break
+			for door in doors:
+				door = door.split(",")
+				if len(door) != 3:
+					log(ERROR, "invalid door")
+					continue
+				doors += [{"ip":door[0], "port":door[1], "wg_pubkey": door[2]}]
 			print(self.controller.send_doors(doors))
 		elif cmd == CMD_VM_WG_UP:
 			print(self.controller.wg_up())
@@ -84,15 +82,22 @@ class VMControllerClient:
 	def run(self):
 		self.print_help()
 
+		print("cli>", end='', flush=True)
 		for line in fileinput.input(files=[]):
-			cmd = int(line)
-			if cmd == self.help:
-				self.print_help()
-			elif cmd == self.quit:
-				print("QUIT")
-				break
+			line = line.split(" ")
+			try:
+				cmd = int(line[0])
+			except:
+				pass
 			else:
-				self.execute(cmd)
+				if cmd == self.help:
+					self.print_help()
+				elif cmd == self.quit:
+					print("QUIT")
+					break
+				else:
+					self.execute(cmd, line[1:])
+			print("cli>", end='', flush=True)
 
 def main():
 	parser = argparse.ArgumentParser(description='HoneyWalt VM Client: test the VM protocol from a command line interface')
