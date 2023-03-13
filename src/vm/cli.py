@@ -36,12 +36,12 @@ class VMControllerClient:
 
 	def execute(self, cmd, line):
 		if cmd == CMD_VM_PHASE:
-			try: phase=int(line)
+			try: phase=int(line[0])
 			except: log(ERROR, "invalid phase")
 			else:
-				log(INFO, "Starting the VM in phase "+phase)
+				log(INFO, "Starting the VM")
 				self.controller.start(phase)
-				print(self.controller.send_phase(phase))
+				print(self.controller.send_phase())
 		elif cmd == CMD_VM_WALT_DEVS:
 			# Build object
 			devs = []

@@ -68,12 +68,12 @@ class VMController(Controller):
 		retries = 0
 		while retries <= retry:
 			if not self.socket.bind(): # Failed to bind
-				log(DEBUG, self.name()+".connect: failed to bind socket, VM probably failed to boot")
 				time.sleep(sleep)
 			else: # Successful bind
 				break
 			retries += 1
 		if retries>retry:
+			log(DEBUG, self.name()+".connect: failed to bind socket, VM probably failed to boot")
 			return False
 		return self.socket.accept(timeout=240)
 
