@@ -91,9 +91,10 @@ class VMController(Controller):
 			return False
 
 	# CMD_VM_PHASE
-	def send_phase(self):
+	def send_phase(self, phase=None):
+		phase = self.phase if phase is None else phase
 		self.socket.send_cmd(CMD_VM_PHASE)
-		self.socket.send_obj(self.phase)
+		self.socket.send_obj(phase)
 		return self.socket.get_answer()
 
 	# CMD_VM_WALT_DEVS

@@ -24,7 +24,7 @@ class VMControllerClient:
 		for key in VM_COMMANDS:
 			spaces = " " * (3-len(str(VM_COMMANDS[key])))
 			if VM_COMMANDS[key] == CMD_VM_PHASE:
-				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key)+" <phase>")
+				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key)+" <phase> [start]")
 			elif VM_COMMANDS[key] == CMD_VM_WALT_DEVS:
 				print("\t-"+spaces+str(VM_COMMANDS[key])+" - "+str(key)+" [<name>,<image>,<username>,<password>,<mac_addr> ...]")
 			elif VM_COMMANDS[key] == CMD_VM_WG_DOORS:
@@ -39,9 +39,10 @@ class VMControllerClient:
 			try: phase=int(line[0])
 			except: log(ERROR, "invalid phase")
 			else:
-				log(INFO, "Starting the VM")
-				self.controller.start(phase)
-				print(self.controller.send_phase())
+				if len(line)>1 and line[1].lower() == "start":
+					log(INFO, "Starting the VM")
+					self.controller.start(phase)
+				print(self.controller.send_phase(phase=phase))
 		elif cmd == CMD_VM_WALT_DEVS:
 			# Build object
 			devs = []
