@@ -154,11 +154,17 @@ class VMController(Controller):
 
 	def hard_shutdown(self):
 		log(INFO, "starting vm hard shutdown")
+
+		# Trying to run "shutdown now" through ssh
+		run("ssh root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
+		
+		# Giving 5 seconds to process shutdown
+		time.sleep(10)
+
+		# Killing the process if the PID is still matching a running process
 		path = to_root_path("run/vm.pid")
-		if exists(path):
+		if self.pid() is not None and exists(path):
 			try:
 				kill_from_file(path)
-				return
 			except:
-				pass
-		log(WARNING, "Failed to stop the VM (pidfile:"+str(path)+").")
+				log(WARNING, "Failed to stop the VM (pidfile:"+str(path)+").")
