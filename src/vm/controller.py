@@ -64,7 +64,7 @@ class VMController(Controller):
 	# Bind the socket and accept a new connection
 	#	retry: number of times we will try to bind the socket (if the VM takes time to boot, the bind operation will fail)
 	#	sleep: duration (in seconds) to sleep before we retry to bind
-	def connect(self, retry=15, sleep=3):
+	def connect(self, retry=3, sleep=3):
 		retries = 0
 		while retries <= retry:
 			if not self.socket.bind(): # Failed to bind
@@ -77,6 +77,30 @@ class VMController(Controller):
 			return False
 		return self.socket.accept(timeout=240)
 
+	# Run a complete "command (+subcommands) - data - answer" exchange on a TCLIENT+HCLIENT socket
+	def exchange(self, commands=[], data=None, timeout=30, retry=1):
+		res = None
+		trials = 0
+		reconnect = False
+		while trials <= retry:
+			trials += 1
+			if reconnect:
+				self.socket.close()
+				if not self.connect(): return None
+				reconnect = False
+			for cmd in commands:
+				if self.socket.send_cmd(cmd) == 0:
+					reconnect = True
+					break
+			else:
+				if data is not None and self.send_obj(data) <= 0:
+					reconnect = True
+					continue
+				res = self.get_answer(timeout=timeout)
+				if res is None: reconnect = True
+				else: break
+		return res
+
 
 	#############################
 	# COMMUNICATION WITH THE VM #
@@ -85,70 +109,47 @@ class VMController(Controller):
 	# CMD_VM_LIVE
 	def connected(self):
 		if self.socket.connected():
-			self.socket.send_cmd(CMD_VM_LIVE)
-			return self.socket.get_answer()
+			return self.exchange(commands=[CMD_VM_LIVE])
 		else:
 			return False
 
 	# CMD_VM_PHASE
 	def send_phase(self, phase=None):
 		phase = self.phase if phase is None else phase
-		self.socket.send_cmd(CMD_VM_PHASE)
-		self.socket.send_obj(phase)
-		return self.socket.get_answer()
+		return self.exchange(commands=[CMD_VM_PHASE], data=phase)
 
 	# CMD_VM_WALT_DEVS
 	def send_devices(self, devs):
-		self.socket.send_cmd(CMD_VM_WALT_DEVS)
-		self.socket.send_obj(devs)
-		return self.socket.get_answer()
+		return self.exchange(commands=[CMD_VM_WALT_DEVS], data=devs)
 
 	# CMD_VM_WALT_IPS
 	def get_ips(self):
-		self.socket.send_cmd(CMD_VM_WALT_IPS)
-		ips = self.socket.recv_obj()
-		if str(ips) == "0" or str(ips) == "": # Failed
-			return None
-		else:
-			return ips
+		return self.exchange(commands=[CMD_VM_WALT_IPS])
 
 	# CMD_VM_WG_KEYGEN
 	def wg_keygen(self):
-		self.socket.send_cmd(CMD_VM_WG_KEYGEN)
-		keys = self.socket.recv_obj()
-		if str(keys) == "0":
-			# Failed
-			return False
-		else:
-			return keys
+		return self.exchange(commands=[CMD_VM_WG_KEYGEN])
 
 	# CMD_VM_WG_DOORS
 	def send_doors(self, doors):
-		self.socket.send_cmd(CMD_VM_WG_DOORS)
-		self.socket.send_obj(doors)
-		return self.socket.get_answer()
+		return self.exchange(commands=[CMD_VM_WG_DOORS], data=doors)
 
 	# CMD_VM_WG_UP
 	def wg_up(self):
-		self.socket.send_cmd(CMD_VM_WG_UP)
-		res = self.socket.get_answer()
-		return res["success"]
+		return self.exchange(commands=[CMD_VM_WG_UP])
 
 	# CMD_VM_WG_DOWN
 	def wg_down(self):
-		self.socket.send_cmd(CMD_VM_WG_DOWN)
-		return self.socket.get_answer()
+		return self.exchange(commands=[CMD_VM_WG_DOWN])
 
 	# CMD_VM_COMMIT
 	def commit(self):
-		self.socket.send_cmd(CMD_VM_COMMIT)
-		return self.socket.get_answer()
+		return self.exchange(commands=[CMD_VM_COMMIT])
 
 	# CMD_VM_SHUTDOWN
 	def soft_shutdown(self):
 		log(INFO, "starting vm soft shutdown")
-		self.socket.send_cmd(CMD_VM_SHUTDOWN)
-		return self.socket.get_answer(timeout=10)
+		return self.exchange(commands=[CMD_VM_SHUTDOWN], timeout=10)
 
 	def hard_shutdown(self):
 		log(INFO, "starting vm hard shutdown")
