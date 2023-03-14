@@ -34,12 +34,12 @@ class VMControllerClient:
 		print("\t- "+str(self.help)+" - HELP")
 		print("\t- "+str(self.quit)+" - QUIT")
 
-	def execute(self, cmd, line):
+	def execute(self, cmd, args):
 		if cmd == CMD_VM_PHASE:
-			try: phase=int(line[0])
+			try: phase=int(args[0])
 			except: log(ERROR, "invalid phase")
 			else:
-				if len(line)>1 and line[1].lower() == "start":
+				if len(args)>1 and args[1].lower() == "start":
 					log(INFO, "Starting the VM")
 					self.controller.start(phase)
 				print(self.controller.send_phase(phase=phase))
@@ -85,9 +85,9 @@ class VMControllerClient:
 
 		print("cli>", end='', flush=True)
 		for line in fileinput.input(files=[]):
-			line = line.split(" ")
+			args = [arg.strip() for arg in line.split(" ")]
 			try:
-				cmd = int(line[0])
+				cmd = int(args[0])
 			except:
 				pass
 			else:
@@ -97,7 +97,7 @@ class VMControllerClient:
 					print("QUIT")
 					break
 				else:
-					self.execute(cmd, line[1:])
+					self.execute(cmd, args[1:])
 			print("cli>", end='', flush=True)
 
 def main():
