@@ -93,10 +93,10 @@ class VMController(Controller):
 					reconnect = True
 					break
 			else:
-				if data is not None and self.send_obj(data) <= 0:
+				if data is not None and self.socket.send_obj(data) <= 0:
 					reconnect = True
 					continue
-				res = self.get_answer(timeout=timeout)
+				res = self.socket.get_answer(timeout=timeout)
 				if res is None: reconnect = True
 				else: break
 		return res
