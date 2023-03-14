@@ -17,6 +17,7 @@ class ClientController(Controller):
 	def __init__(self):
 		log(INFO, "ClientController.__init__: creating the ClientController")
 		self.socket = ServerSocket(CLIENT_PORT)
+		self.socket.set_name("Socket(Controller-Client)")
 		self.keep_running = False
 
 	def __del__(self):

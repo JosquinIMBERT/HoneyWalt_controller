@@ -13,6 +13,7 @@ class DoorController(Controller):
 		log(DEBUG, "DoorController.__init__: creating the DoorController for "+str(door["host"]))
 		self.door = door
 		self.socket = ClientSocket()
+		self.socket.set_name("Socket(Controller-Door["+str(door["host"])+"])")
 
 	def __del__(self):
 		del self.socket

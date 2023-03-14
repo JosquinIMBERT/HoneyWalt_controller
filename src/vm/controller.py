@@ -13,6 +13,7 @@ class VMController(Controller):
 	def __init__(self):
 		log(INFO, "VMController.__init__: creating the VMController")
 		self.socket = ServerSocket(CONTROL_PORT, addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK)
+		self.socket.set_name("Socket(Controller-VM)")
 		self.phase = None
 
 	def __del__(self):
