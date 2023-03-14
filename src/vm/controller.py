@@ -43,10 +43,10 @@ class VMController(Controller):
 		})
 		# Starting the VM
 		if not run(vm_cmd):
-			log(ERROR, self.name()+".start: failed to start the VM")
+			log(ERROR, self.get_name()+".start: failed to start the VM")
 		# Waiting for the VM to connect
 		if not self.connect():
-			log(ERROR, self.name()+".start: failed to accept the VM connection")
+			log(ERROR, self.get_name()+".start: failed to accept the VM connection")
 
 	def stop(self):
 		self.phase = None
@@ -74,7 +74,7 @@ class VMController(Controller):
 				break
 			retries += 1
 		if retries>retry:
-			log(DEBUG, self.name()+".connect: failed to bind socket, VM probably failed to boot")
+			log(DEBUG, self.get_name()+".connect: failed to bind socket, VM probably failed to boot")
 			return False
 		return self.socket.accept(timeout=240)
 
