@@ -39,6 +39,7 @@ def add(ip, dev):
 		"id":door_id
 	}
 	glob.CONFIG["door"] += [ new_door ]
+	glob.CONFIG["need_commit"] = "True"
 
 	with open(glob.DOOR_PUB_KEY) as file:
 		key = file.read()
@@ -74,6 +75,8 @@ def chg(ip, new_ip=None, new_dev=None):
 			res["answer"] = {"key":key}
 		return res
 
+	glob.CONFIG["need_commit"] = "True"
+
 	return res
 
 
@@ -88,6 +91,7 @@ def delete(ip):
 		return res
 
 	del glob.CONFIG["door"][door]
+	glob.CONFIG["need_commit"] = "True"
 
 	return res
 

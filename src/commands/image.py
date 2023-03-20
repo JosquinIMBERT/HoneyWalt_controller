@@ -37,6 +37,7 @@ def add(name, username="root", password="root"):
 		"pass":password
 	}
 	glob.CONFIG["image"] += [ new_img ]
+	glob.CONFIG["need_commit"] = "True"
 
 	return res
 
@@ -73,6 +74,8 @@ def chg(name, username=None, password=None):
 		image["user"] = username
 	if password is not None:
 		image["pass"] = password
+
+	glob.CONFIG["need_commit"] = "True"
 
 	return res
 
@@ -111,6 +114,7 @@ def delete(name):
 		return res
 
 	del glob.CONFIG["image"][img_id]
+	glob.CONFIG["need_commit"] = "True"
 
 	return res
 

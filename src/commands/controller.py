@@ -36,6 +36,8 @@ def set(throughput=None, latency=None):
 			res[ERROR] = ["invalid latency"]
 			return res
 
+	glob.CONFIG["need_commit"] = "True"
+
 	return res
 
 

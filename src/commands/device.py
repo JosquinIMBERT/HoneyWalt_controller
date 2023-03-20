@@ -41,6 +41,7 @@ def add(name, mac, image, ports=[]):
 		"id": dev_id
 	}
 	glob.CONFIG["device"] += [ new_dev ]
+	glob.CONFIG["need_commit"] = "True"
 
 	return res
 
@@ -77,6 +78,8 @@ def chg(name, new_name=None, new_image=None, new_ports=None):
 	if new_ports is not None:
 		device["ports"] = new_ports
 
+	glob.CONFIG["need_commit"] = "True"
+
 	return res
 
 
@@ -96,6 +99,7 @@ def delete(name):
 		return res
 
 	del glob.CONFIG["device"][dev_id]
+	glob.CONFIG["need_commit"] = "True"
 
 	return res
 
