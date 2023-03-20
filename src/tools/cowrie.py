@@ -8,6 +8,7 @@ from common.utils.logs import *
 from common.utils.system import *
 from common.utils.misc import *
 import common.utils.settings as settings
+import glob
 
 class CowrieController:
 	def __init__(self):
