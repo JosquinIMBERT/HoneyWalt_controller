@@ -189,8 +189,6 @@ def commit(regen=True, force=False):
 
 	log(INFO, "starting VM")
 	glob.SERVER.VM_CONTROLLER.start(1)
-	log(INFO, "waiting for VM to boot and connect")
-	glob.SERVER.VM_CONTROLLER.connect()
 	log(INFO, "sending phase to VM")
 	glob.SERVER.VM_CONTROLLER.send_phase()
 	log(INFO, "sending devices to VM")
