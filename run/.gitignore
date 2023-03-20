@@ -1,2 +1,5 @@
-vm.pid
-vm.phase
+*
+!cowrie
+!ssh
+!traffic-shaper
+!wireguard
