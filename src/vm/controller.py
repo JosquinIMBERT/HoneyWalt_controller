@@ -13,7 +13,7 @@ class VMController(Controller):
 	def __init__(self):
 		Controller.__init__(self)
 		log(INFO, self.get_name()+".__init__: creating the VMController")
-		self.socket = ServerSocket(CONTROL_PORT, addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK)
+		self.socket = ServerSocket(CONTROL_PORT, addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK, reusable = True)
 		self.socket.set_name("Socket(Controller-VM)")
 		self.phase = None
 
@@ -62,6 +62,7 @@ class VMController(Controller):
 		# Cancel hard shutdown if soft shutdown was successful
 		if not self.pid():
 			timer.cancel()
+			self.socket.reinit()
 
 	# Bind the socket and accept a new connection
 	#	retry: number of times we will try to bind the socket (if the VM takes time to boot, the bind operation will fail)
@@ -155,6 +156,8 @@ class VMController(Controller):
 
 	def hard_shutdown(self):
 		log(INFO, "starting vm hard shutdown")
+
+		self.socket.reinit()
 
 		# Trying to run "shutdown now" through ssh
 		run("ssh root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
