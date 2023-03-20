@@ -10,7 +10,8 @@ from common.utils.sockets import ClientSocket
 
 class DoorController(Controller):
 	def __init__(self, door):
-		log(DEBUG, "DoorController.__init__: creating the DoorController for "+str(door["host"]))
+		Controller.__init__(self)
+		log(DEBUG, self.get_name()+".__init__: creating the DoorController for "+str(door["host"]))
 		self.door = door
 		self.socket = ClientSocket()
 		self.socket.set_name("Socket(Controller-Door["+str(door["host"])+"])")
