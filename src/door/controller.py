@@ -37,7 +37,9 @@ class DoorController(Controller):
 
 	# CMD_DOOR_WG_KEYGEN
 	def wg_keygen(self):
-		return self.socket.exchange(commands=[CMD_DOOR_WG_KEYGEN])
+		res = self.socket.exchange(commands=[CMD_DOOR_WG_KEYGEN])
+		res["host"] = self.door["host"]
+		return res
 
 	# CMD_DOOR_WG_UP
 	def wg_up(self):
