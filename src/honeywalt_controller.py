@@ -43,9 +43,9 @@ class ControllerServer:
 	def stop(self):
 		self.CLIENT_CONTROLLER.stop()
 		self.VM_CONTROLLER.stop()
-		self.DOORS_CONTROLLER.stop()
 		self.COWRIE_CONTROLLER.stop()
 		self.TUNNELS_CONTROLLER.stop()
+		del self.DOORS_CONTROLLER
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='HoneyWalt Controller Daemon')
