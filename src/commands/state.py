@@ -171,11 +171,12 @@ def commit(regen=True, force=False):
 	doors = []
 	for door_key in doors_keys:
 		door = find(glob.CONFIG["door"], door_key["host"], "host")
+		dev = find(glob.CONFIG["device"], door["dev"], "node")
 		doors += [{
 			"ip":settings.get("IP_FOR_DMZ"),
 			"port":settings.get("WIREGUARD_PORTS")+int(door["id"]),
-			"dev_id":door["dev_id"],
-			"wg_pubkey":door_key["wg_pubkey"]
+			"dev_id":dev["id"],
+			"wg_pubkey":door_key["pubkey"]
 		}]
 
 	# Format device data for VM
