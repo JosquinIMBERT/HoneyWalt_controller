@@ -52,6 +52,10 @@ class VMController(Controller):
 	def stop(self):
 		self.phase = None
 
+		# Don't try to stop if it is already stopped
+		if not self.pid():
+			return None
+
 		# Schedule hard shutdown in case of fail of soft shutdown
 		timer = threading.Timer(10, self.hard_shutdown)
 		timer.start()
