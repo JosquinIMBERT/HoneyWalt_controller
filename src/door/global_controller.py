@@ -17,12 +17,12 @@ class DoorGlobalController:
 		for door_id, controller in self.controllers.items():
 			del controller
 
-	def reload(self):
+	def reload(self, config):
 		log(INFO, "DoorGlobalController.reload: reloading the DoorGlobalController")
 		for door_id, controller in self.controllers.items():
 			del controller
 		self.controllers = {}
-		for door in glob.RUN_CONFIG["door"]:
+		for door in config["door"]:
 			self.controllers[str(door["id"])] = DoorController(door)
 
 	def start(self):

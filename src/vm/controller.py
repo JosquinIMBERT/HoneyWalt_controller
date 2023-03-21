@@ -159,15 +159,15 @@ class VMController(Controller):
 
 		self.socket.reinit()
 
-		# Trying to run "shutdown now" through ssh
-		run("ssh root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
-		
-		# Giving 5 seconds to process shutdown
-		time.sleep(10)
-
 		# Killing the process if the PID is still matching a running process
 		path = to_root_path("run/vm.pid")
-		if self.pid() is not None and exists(path):
+		if self.pid() is not None:
+			# Trying to run "shutdown now" through ssh
+			run("ssh root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
+		
+			# Giving 5 seconds to process shutdown
+			time.sleep(10)
+
 			try:
 				kill_from_file(path)
 			except:

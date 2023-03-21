@@ -33,7 +33,7 @@ def start():
 	if glob.CONFIG["need_commit"] == "True":
 		res[WARNING] = ["warning: you have uncommited changes. Running with the previous commited configuration"]
 
-	glob.SERVER.DOORS_CONTROLLER.reload()
+	glob.SERVER.DOORS_CONTROLLER.reload(glob.RUN_CONFIG)
 	self.DOORS_CONTROLLER.start()
 
 
@@ -159,6 +159,9 @@ def commit(regen=True, force=False):
 	if regen:
 		log(INFO, "generating cowrie configurations")
 		glob.SERVER.COWRIE_CONTROLLER.generate_configurations()
+
+	log(INFO, "reloading doors controller")
+	glob.SERVER.DOORS_CONTROLLER.reload(glob.CONFIG)
 
 	log(INFO, "generating doors wireguard keys")
 	doors_keys = glob.SERVER.DOORS_CONTROLLER.wg_keygen()
