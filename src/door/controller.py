@@ -21,7 +21,7 @@ class DoorController(Controller):
 		del self.door
 
 	def connect(self):
-		self.socket.connect(self.door["host"], DOOR_PORT)
+		return self.socket.connect(ip=self.door["host"], port=DOOR_PORT)
 
 	# CMD_DOOR_LIVE
 	def connected(self):
