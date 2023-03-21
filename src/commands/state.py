@@ -206,9 +206,9 @@ def commit(regen=True, force=False):
 	glob.SERVER.VM_CONTROLLER.commit()
 	
 	# Adding wireguard public keys to devices in config
-	for dev in vm_keys: #<dev_id,pubkey>
-		dev = find(glob.CONFIG["device"], dev["dev_id"], "id")
-		dev["pubkey"] = dev["pubkey"]
+	for dev_key in vm_keys: #<dev_id,pubkey>
+		dev = find(glob.CONFIG["device"], dev_key["dev_id"], "id")
+		dev["pubkey"] = dev_key["pubkey"]
 
 	log(INFO, "updating configuration file")
 	set_conf(glob.CONFIG, need_commit=False)
