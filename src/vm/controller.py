@@ -63,6 +63,8 @@ class VMController(Controller):
 		if not self.pid():
 			timer.cancel()
 			self.socket.reinit()
+		else:
+			timer.join()
 
 	# Bind the socket and accept a new connection
 	#	retry: number of times we will try to bind the socket (if the VM takes time to boot, the bind operation will fail)
