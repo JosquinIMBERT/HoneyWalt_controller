@@ -101,10 +101,12 @@ def start():
 		dev = find(glob.RUN_CONFIG["device"], door["dev"], "node")
 		keys += [{"door_id": door["id"], "dev_id": dev["id"], "pubkey": dev["pubkey"]}]
 
-	log(INFO, "starting vm wireguard")
-	glob.SERVER.VM_CONTROLLER.wg_up()
+	log(INFO, "removing doors wireguard peers")
+	glob.SERVER.DOORS_CONTROLLER.wg_reset()
 	log(INFO, "adding doors wireguard peers")
 	glob.SERVER.DOORS_CONTROLLER.wg_add_peer(keys)
+	log(INFO, "starting vm wireguard")
+	glob.SERVER.VM_CONTROLLER.wg_up()
 	log(INFO, "starting doors wireguard")
 	glob.SERVER.DOORS_CONTROLLER.wg_up()
 	log(INFO, "starting doors traffic-shaper")

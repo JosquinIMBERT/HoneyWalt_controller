@@ -49,6 +49,10 @@ class DoorController(Controller):
 	def wg_down(self):
 		return self.socket.exchange(commands=[CMD_DOOR_WG_DOWN])
 
+	# CMD_DOOR_WG_RESET
+	def wg_reset(self):
+		return self.socket.exchange(commands=[CMD_DOOR_WG_RESET])
+
 	# CMD_DOOR_WG_ADD_PEER
 	def wg_add_peer(self, pubkey, dev_id):
 		return self.socket.exchange(

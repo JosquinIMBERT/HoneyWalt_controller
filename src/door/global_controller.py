@@ -51,6 +51,10 @@ class DoorGlobalController:
 		for door_id, controller in self.controllers.items():
 			controller.wg_down()
 
+	def wg_reset(self):
+		for door_id, controller in self.controllers.items():
+			controller.wg_reset()
+
 	def wg_add_peer(self, peers):
 		for door_id, controller in self.controllers.items():
 			peer = find(peers, int(door_id), "door_id")
