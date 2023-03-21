@@ -162,6 +162,7 @@ def commit(regen=True, force=False):
 
 	log(INFO, "reloading doors controller")
 	glob.SERVER.DOORS_CONTROLLER.reload(glob.CONFIG)
+	glob.SERVER.DOORS_CONTROLLER.start()
 
 	log(INFO, "generating doors wireguard keys")
 	doors_keys = glob.SERVER.DOORS_CONTROLLER.wg_keygen()
