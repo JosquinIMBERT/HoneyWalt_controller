@@ -85,6 +85,11 @@ class TunnelsController:
 	def stop_cowrie_tunnels_dmz(self):
 		stop_tunnels("cowrie-dmz")
 
+	def stop(self):
+		self.stop_expose_ports()
+		self.stop_cowrie_tunnels_out()
+		self.stop_cowrie_tunnels_dmz()
+
 
 	#######################
 	#   START UTILITIES   #
