@@ -28,7 +28,7 @@ class TunnelsController:
 		BACKEND_PORTS = settings.get("BACKEND_PORTS")
 
 		for dev in glob.RUN_CONFIG["device"]:
-			start_tunnel_controller_dmz(
+			self.start_tunnel_controller_dmz(
 				to_root_path("run/ssh/cowrie-dmz/"),
 				BACKEND_PORTS+i,
 				dev["ip"],
@@ -40,7 +40,7 @@ class TunnelsController:
 
 		for door in glob.RUN_CONFIG["door"]:
 			dev = find(glob.RUN_CONFIG["device"], door["dev"], "node")
-			start_tunnel_door_controller(
+			self.start_tunnel_door_controller(
 				to_root_path("run/ssh/cowrie-out/"),
 				22,
 				LISTEN_PORTS+dev["id"],
@@ -55,14 +55,14 @@ class TunnelsController:
 			door = find(glob.RUN_CONFIG["door"], dev["node"], "dev")
 			for port in dev["ports"]:
 				# Controller --> Device
-				start_tunnel_controller_dmz(
+				self.start_tunnel_controller_dmz(
 					to_root_path("run/ssh/expose-dmz/"),
 					EXPOSE_PORTS+dev["id"],
 					dev["ip"],
 					port
 				)
 				# Door --> Controller
-				start_tunnel_door_controller(
+				self.start_tunnel_door_controller(
 					to_root_path("run/ssh/expose-out/"),
 					port,
 					EXPOSE_PORTS+dev["id"],
@@ -77,13 +77,13 @@ class TunnelsController:
 	# For additional ports (not ssh)
 	def stop_expose_ports(self):
 		for directory in ["expose-out", "expose-dmz"]:
-			stop_tunnels(directory)
+			self.stop_tunnels(directory)
 
 	def stop_cowrie_tunnels_out(self):
-		stop_tunnels("cowrie-out")
+		self.stop_tunnels("cowrie-out")
 
 	def stop_cowrie_tunnels_dmz(self):
-		stop_tunnels("cowrie-dmz")
+		self.stop_tunnels("cowrie-dmz")
 
 	def stop(self):
 		self.stop_expose_ports()
