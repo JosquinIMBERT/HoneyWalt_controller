@@ -27,6 +27,9 @@ class ClientController(Controller):
 	def start(self):
 		self.socket.bind()
 
+	def reconnect(self):
+		return self.socket.accept()
+
 	def run(self):
 		self.keep_running = True
 		while self.keep_running:

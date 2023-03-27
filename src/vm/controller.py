@@ -161,20 +161,20 @@ class VMController(Controller):
 		return self.exchange(commands=[CMD_VM_SHUTDOWN], timeout=10)
 
 	def hard_shutdown(self):
-		log(INFO, "starting vm hard shutdown")
-
 		self.socket.reinit()
 
 		# Killing the process if the PID is still matching a running process
 		path = to_root_path("run/vm.pid")
 		if self.pid() is not None:
+			log(INFO, "starting vm hard shutdown")
+
 			# Trying to run "shutdown now" through ssh
-			run("ssh root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
+			run("ssh -o ConnectTimeout=3 root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
 		
-			# Giving 5 seconds to process shutdown
-			time.sleep(10)
+			# Giving 2 seconds for qemu process to shutdown with the VM
+			time.sleep(2)
 
 			try:
-				kill_from_file(path)
+				if self.pid() is not None: kill_from_file(path)
 			except:
 				log(WARNING, "Failed to stop the VM (pidfile:"+str(path)+").")
