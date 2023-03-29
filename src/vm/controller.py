@@ -63,6 +63,8 @@ class VMController(Controller):
 		# Trying soft shutdown (run shutdown command)
 		self.soft_shutdown()
 
+		time.sleep(3)
+
 		# Cancel hard shutdown if soft shutdown was successful
 		if not self.pid():
 			timer.cancel()
@@ -171,8 +173,8 @@ class VMController(Controller):
 			# Trying to run "shutdown now" through ssh
 			run("ssh -o ConnectTimeout=3 root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
 		
-			# Giving 2 seconds for qemu process to shutdown with the VM
-			time.sleep(2)
+			# Giving 3 seconds for qemu process to shutdown with the VM
+			time.sleep(3)
 
 			try:
 				if self.pid() is not None: kill_from_file(path)
