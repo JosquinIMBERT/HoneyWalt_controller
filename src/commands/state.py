@@ -204,7 +204,7 @@ def commit(regen=True, force=False):
 	glob.SERVER.VM_CONTROLLER.send_doors(doors)
 	log(INFO, "generating VM wireguard keys")
 	vm_keys = glob.SERVER.VM_CONTROLLER.wg_keygen()
-	log(INFO, "generating VM wireguard configuration (VM commit)")
+	log(INFO, "commit on VM")
 	glob.SERVER.VM_CONTROLLER.commit()
 	
 	# Adding wireguard public keys to devices in config
@@ -212,7 +212,7 @@ def commit(regen=True, force=False):
 		dev = find(glob.CONFIG["device"], dev_key["dev_id"], "id")
 		dev["pubkey"] = dev_key["pubkey"]
 
-	log(INFO, "updating configuration file")
+	log(INFO, "updating local configuration file")
 	set_conf(glob.CONFIG, need_commit=False)
 
 	log(INFO, "stopping VM")
