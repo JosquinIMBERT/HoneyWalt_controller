@@ -34,7 +34,7 @@ def start():
 		res[WARNING] = ["warning: you have uncommited changes. Running with the previous commited configuration"]
 
 	glob.SERVER.DOORS_CONTROLLER.reload(glob.RUN_CONFIG)
-	self.DOORS_CONTROLLER.start()
+	glob.SERVER.DOORS_CONTROLLER.start()
 
 
 	#####################

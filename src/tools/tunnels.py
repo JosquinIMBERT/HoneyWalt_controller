@@ -1,12 +1,15 @@
 # External
 from sshtunnel import SSHTunnelForwarder
 from string import Template
+import tempfile
 
 # Internal
 from common.utils.files import *
 from common.utils.logs import *
+from common.utils.misc import *
 import common.utils.settings as settings
 from common.utils.system import *
+import glob
 
 class TunnelsController:
 	def __init__(self):
@@ -30,7 +33,7 @@ class TunnelsController:
 		for dev in glob.RUN_CONFIG["device"]:
 			self.start_tunnel_controller_dmz(
 				to_root_path("run/ssh/cowrie-dmz/"),
-				BACKEND_PORTS+i,
+				BACKEND_PORTS+dev["id"],
 				dev["ip"],
 				22
 			)

@@ -33,7 +33,7 @@ class CowrieController:
 		for dev in glob.CONFIG["device"]:
 			img = find(glob.CONFIG["image"], dev["image"], "short_name")
 			if img is None:
-				log(WARNING, "image not found for device "+dev["node"])
+				log(WARNING, "image not found for device "+str(dev["node"]))
 			else:
 				backend_user = img["user"]
 				backend_pass = img["pass"]
@@ -70,9 +70,9 @@ class CowrieController:
 			template = Template(file.read())
 		for dev in glob.RUN_CONFIG["device"]:
 			cmd = template.substitute({
-				"conf_path": to_root_path("run/cowrie/conf/"+dev["id"]+".conf"),
-				"pid_path": to_root_path("run/cowrie/pid/"+dev["id"]+".pid"),
-				"log_path": to_root_path("run/cowrie/log/"+dev["id"]+".log")
+				"conf_path": to_root_path("run/cowrie/conf/"+str(dev["id"])+".conf"),
+				"pid_path": to_root_path("run/cowrie/pid/"+str(dev["id"])+".pid"),
+				"log_path": to_root_path("run/cowrie/log/"+str(dev["id"])+".log")
 			})
 			if not run(cmd):
 				log(ERROR, "CowrieController.strat_cowrie: failed to start cowrie")
@@ -97,4 +97,4 @@ class CowrieController:
 	# This may be piped into another program that analyzes the logs from its standard input
 	def read_logs(self, dev):
 		device = find(glob.RUN_CONFIG, dev, "node")
-		run("nc -lp "+dev["id"])
+		run("nc -lp "+str(dev["id"]))
