@@ -117,7 +117,7 @@ class TunnelsController:
 			root@${host} \
 			-p ${realssh_port}")
 
-		tunnel_cmd = template.substitute({
+		tunnel_cmd = toDoor_template.substitute({
 			"socket": self.gen_sock_filename(socketdir),
 			"door_port": door_port,
 			"local_port": local_port,
