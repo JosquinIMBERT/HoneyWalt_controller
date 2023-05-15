@@ -5,7 +5,7 @@ pip3 install sshtunnel
 
 # Adding environment variable
 dir=$(dirname $0)
-home=$(realpath ${dir})
+home=$(realpath ${dir}/../)
 echo "export HONEYWALT_CONTROLLER_HOME=${home}/" >> ~/.bash_profile
 
 # Include ~/.bash_profile if ~/.bashrc does not exist or if it does not include it already
