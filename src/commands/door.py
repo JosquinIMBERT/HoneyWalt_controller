@@ -7,22 +7,18 @@ from common.utils.logs import *
 from common.utils.misc import *
 
 
-def add(ip, dev):
-	res={"success":True}
-
+def add(ip, dev, client):
 	# Check device (the device should be registered first)
 	device = find(glob.CONFIG["device"], dev, "node")
 	if device is None:
-		res["success"] = False
-		res[ERROR] = ["device not found"]
-		return res
+		client.log(ERROR, "device not found")
+		return None
 
 	# Check door doesn't exist
 	door = find(glob.CONFIG["door"], ip, "host")
 	if door is not None:
-		res["success"] = False
-		res[ERROR] = ["door already exists"]
-		return res
+		client.log(ERROR, "door already exists")
+		return None
 
 	# Compute door ID
 	if len(glob.CONFIG["door"]) == 0:
@@ -43,8 +39,9 @@ def add(ip, dev):
 
 	with open(glob.DOOR_PUB_KEY) as file:
 		key = file.read()
-		res["answer"] = {"key":key}
-	return res
+		return key
+	
+	return None
 
 
 def chg(ip, new_ip=None, new_dev=None):
@@ -96,7 +93,6 @@ def delete(ip):
 	return res
 
 
-def show():
-	res={"success":True}
-	res["answer"] = glob.CONFIG["door"]
-	return res
+def show(client):
+	client.log(INFO, "test")
+	return glob.CONFIG["door"]

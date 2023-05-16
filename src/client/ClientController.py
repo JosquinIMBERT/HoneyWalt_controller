@@ -90,7 +90,7 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_door_add(self, ip, dev):
-		return commands.door.add(ip, dev)
+		return commands.door.add(ip, dev, self)
 
 	def exposed_door_chg(self, ip, new_ip=None, new_dev=None):
 		return commands.door.chg(ip, new_ip=new_ip, new_dev=new_dev)
@@ -99,7 +99,7 @@ class ClientService(rpyc.Service):
 		return commands.door.delete(ip)
 
 	def exposed_door_show(self):
-		return commands.door.show()
+		return commands.door.show(self)
 
 
 
