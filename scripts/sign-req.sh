@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dir=$(realpath ${PWD})
+dir=$(realpath ${HONEYWALT_CONTROLLER_HOME}/var/key/ca/)
 
 usage() {
 	echo "Usage: $0: <req-file> <client/server>"
@@ -13,13 +13,20 @@ fi
 
 file=$1
 role=$2
+name=$(basename ${file} | cut -d"." -f1)
 
 shortname=$(echo $RANDOM | md5sum | head -c 20; echo;)
 
-easyrsa import-req ${file} ${shortname}
-easyrsa show-req ${shortname}
-easyrsa sign-req ${role} ${shortname}
-easyrsa show-cert ${shortname}
+cd ${dir}/
+
+easyrsa import-req ${file} ${shortname} >/dev/null
+easyrsa show-req ${shortname} >/dev/null
+easyrsa sign-req ${role} ${shortname} >/dev/null
+easyrsa show-cert ${shortname} >/dev/null
+
+srcres=$(realpath ${dir}/pki/issued/${shortname}.crt)
+dstres=$(realpath ${dir}/pki/issued/${name}.crt)
+mv ${srcres} ${dstres}
 
 res=$(realpath ${dir}/pki/issued/${shortname}.crt)
 ca=$(realpath ${dir}/pki/ca.crt)
@@ -31,3 +38,4 @@ echo "You can find it here: ${res}"
 echo "You may also need:    ${ca}"
 echo
 echo "You should now copy these two files back to your machine"
+echo

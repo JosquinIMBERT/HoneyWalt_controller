@@ -2,8 +2,9 @@
 
 dir=$(realpath $(dirname $0))
 
-sudo apt-get install easy-rsa
+apt-get install -y easy-rsa
 export PATH="$PATH:/usr/share/easy-rsa/"
+export EASYRSA_BATCH=1
 
 # Create CA
 

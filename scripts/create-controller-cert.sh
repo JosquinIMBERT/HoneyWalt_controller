@@ -8,9 +8,9 @@ if [ ! -d "${dir}" ]; then
 fi
 
 cd ${dir}/
-easyrsa init-pki
-easyrsa gen-req controller-client nopass
-easyrsa gen-req controller-server nopass
+easyrsa init-pki >/dev/null
+easyrsa gen-req controller-client nopass >/dev/null
+easyrsa gen-req controller-server nopass >/dev/null
 
 ${HONEYWALT_CONTROLLER_HOME}/scripts/sign-req.sh "${dir}/pki/reqs/controller-client.req" "client"
 ${HONEYWALT_CONTROLLER_HOME}/scripts/sign-req.sh "${dir}/pki/reqs/controller-server.req" "server"

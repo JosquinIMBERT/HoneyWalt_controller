@@ -7,7 +7,7 @@ if [ ! -d "${dir}" ]; then
 	exit 1
 fi
 
-mkdir ${dir}/ca
+mkdir -p ${dir}/ca
 cd ${dir}/ca/
-easyrsa init-pki
-easyrsa build-ca
+easyrsa init-pki >/dev/null
+easyrsa build-ca >/dev/null
