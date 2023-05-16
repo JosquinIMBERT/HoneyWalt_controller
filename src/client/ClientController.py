@@ -42,17 +42,23 @@ class ClientService(rpyc.Service):
 		self.remote_stdout = None
 		self.remote_stderr = None
 		self.loglevel = INFO
+		self.conn = None
+		self.remote_ip = None
 
 	def __del__(self):
 		del self.remote_stdout
 		del self.remote_stderr
 		del self.loglevel
+		del self.conn
+		del self.remote_ip
 
 	def on_connect(self, conn):
-		log(INFO, self.__class__.__name__+": New connection")
+		self.conn = conn
+		self.remote_ip = conn.root.get_ip()
+		log(INFO, self.__class__.__name__+": New connection from", self.remote_ip)
 
 	def on_disconnect(self, conn):
-		log(INFO, self.__class__.__name__+": End of connection")
+		log(INFO, self.__class__.__name__+": End of connection with", self.remote_ip)
 
 	def exposed_set_stdout(self, stdout):
 		# TODO: verify what the client is giving as argument
