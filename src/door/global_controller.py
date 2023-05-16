@@ -4,15 +4,16 @@ import os, sys
 # Internal
 from common.utils.logs import *
 from common.utils.misc import *
-from door.controller import DoorController
+#from door.controller import DoorController
+from door.DoorController import DoorController
 import glob
 
 class DoorGlobalController:
 	def __init__(self):
 		log(INFO, "DoorGlobalController.__init__: creating the DoorGlobalController")
 		self.controllers = {}
-		for door in glob.RUN_CONFIG["door"]:
-			self.controllers[str(door["id"])] = DoorController(door)
+		#for door in glob.RUN_CONFIG["door"]:
+		#	self.controllers[str(door["id"])] = DoorController(door)
 
 	def __del__(self):
 		for door_id, controller in self.controllers.items():
@@ -25,10 +26,6 @@ class DoorGlobalController:
 		self.controllers = {}
 		for door in config["door"]:
 			self.controllers[str(door["id"])] = DoorController(door)
-
-	def start(self):
-		for door_id, controller in self.controllers.items():
-			controller.connect()
 
 	def firewall_up(self):
 		for door_id, controller in self.controllers.items():

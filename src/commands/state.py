@@ -30,7 +30,6 @@ def start(client):
 		client.log(WARNING, "you have uncommited changes. Running with the previous commited configuration")
 
 	glob.SERVER.DOORS_CONTROLLER.reload(glob.RUN_CONFIG)
-	glob.SERVER.DOORS_CONTROLLER.start()
 
 
 	#####################
@@ -154,7 +153,6 @@ def commit(client, regen=True, force=False):
 
 	log(INFO, "reloading doors controller")
 	glob.SERVER.DOORS_CONTROLLER.reload(glob.CONFIG)
-	glob.SERVER.DOORS_CONTROLLER.start()
 
 	log(INFO, "generating doors wireguard keys")
 	doors_keys = glob.SERVER.DOORS_CONTROLLER.wg_keygen()
