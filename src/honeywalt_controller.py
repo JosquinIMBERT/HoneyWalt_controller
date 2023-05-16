@@ -2,8 +2,7 @@
 import argparse, signal, threading
 
 # Internal
-#from client.controller import ClientController
-from client.ClientController import ClientController
+from client.controller import ClientController
 from common.utils.files import *
 from common.utils.logs import *
 from config import get_conf
@@ -39,7 +38,6 @@ class ControllerServer:
 
 	def start(self):
 		self.CLIENT_CONTROLLER.start()
-		#self.CLIENT_CONTROLLER.run()
 
 	def stop(self):
 		self.CLIENT_CONTROLLER.stop()
