@@ -14,7 +14,7 @@ from common.utils.logs import *
 class DoorControllerClient:
 	def __init__(self, door):
 		self.controller = DoorController(door)
-		self.controller.connect()
+		#self.controller.connect()
 		self.help = len(DOOR_COMMANDS)+1
 		self.quit = len(DOOR_COMMANDS)+2
 
@@ -53,8 +53,8 @@ class DoorControllerClient:
 			print(self.controller.traffic_shaper_up())
 		elif cmd == CMD_DOOR_TRAFFIC_SHAPER_DOWN:
 			print(self.controller.traffic_shaper_down())
-		elif cmd == CMD_DOOR_LIVE:
-			print(self.controller.connected())
+		#elif cmd == CMD_DOOR_LIVE:
+		#	print(self.controller.connected())
 		else:
 			print("Unknown command")
 
