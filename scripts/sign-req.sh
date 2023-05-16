@@ -19,7 +19,7 @@ if [ $# -ge 3 ] && [[ "$3" == "-s" || "$3" == "--silent" ]]; then
         silent=1
 fi
 
-file=$1
+file=$(realpath $1)
 role=$2
 name=$(basename ${file} | cut -d"." -f1)
 
@@ -34,7 +34,7 @@ srcres=$(realpath ${dir}/pki/issued/${shortname}.crt)
 dstres=$(realpath ${dir}/pki/issued/${name}.crt)
 mv ${srcres} ${dstres}
 
-res=$(realpath ${dir}/pki/issued/${shortname}.crt)
+res=${dstres}
 ca=$(realpath ${dir}/pki/ca.crt)
 
 if [ $silent -eq 0 ]; then
