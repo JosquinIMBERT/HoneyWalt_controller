@@ -1,5 +1,5 @@
 # External
-import json, os, ssl, sys
+import ssl
 from rpyc.utils.server import ThreadedServer
 from rpyc.utils.authenticators import SSLAuthenticator
 
@@ -11,14 +11,12 @@ import commands.image
 import commands.state
 import commands.vm
 from common.client.proto import *
-from common.utils.controller import Controller
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.rpc import AbstractService
 
-class ClientController(Controller):
+class ClientController():
 	def __init__(self):
-		Controller.__init__(self)
 		log(INFO, "Creating the ClientController")
 
 	def __del__(self):
