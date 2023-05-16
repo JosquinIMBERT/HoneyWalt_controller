@@ -25,7 +25,7 @@ class ClientController(Controller):
 
 	def start(self):
 		authenticator = SSLAuthenticator(
-			to_root_path("var/key/pki/private/server.key"),
+			to_root_path("var/key/pki/private/controller-server.key"),
 			to_root_path("var/key/pki/controller-server.crt"),
 			ca_certs=to_root_path("var/key/pki/ca.crt"),
 			cert_reqs=ssl.CERT_REQUIRED,
