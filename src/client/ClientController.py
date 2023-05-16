@@ -40,6 +40,8 @@ class ClientController(Controller):
 class ClientService(rpyc.Service):
 	def __init__(self):
 		log(INFO, "Creating the ClientService")
+		self.remote_stdout = None
+		self.remote_stderr = None
 
 	def __del__(self):
 		log(INFO, "Deleting the ClientService")
@@ -49,6 +51,16 @@ class ClientService(rpyc.Service):
 
 	def on_disconnect(self, conn):
 		log(INFO, "End of connection with", conn)
+
+	def exposed_set_stdout(self, stdout):
+		self.remote_stdout = stdout
+
+	def exposed_set_stderr(self, stderr):
+		self.remote_stderr = stderr
+
+	def log(self, level, *args, **kwargs):
+		if self.remote_stdout is not None and self.remote_stderr is not None:
+			log_remote(level, self.remote_stdout, self.remote_stderr, *args, **kwargs)
 
 
 
