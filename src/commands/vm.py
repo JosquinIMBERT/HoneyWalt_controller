@@ -6,36 +6,31 @@ from common.utils.logs import *
 import common.utils.settings as settings
 import glob
 
-def shell():
+def shell(client):
 	if not glob.SERVER.VM_CONTROLLER.pid():
-		return {"success": False, ERROR: ["the VM seems to be stopped"]}
+		client.log(ERROR, "the VM seems to be stopped")
+		return None
 	else:
-		res = {"success": True, "answer": {}}
+		res = {}
 		if glob.SERVER.VM_CONTROLLER.phase != 1:
-			res[WARNING] = ["the VM is in run mode. Your modifications will be lost after reboot and an attacker could infect the VM"]
-		res["answer"]["ip"] = settings.get("VM_IP")
+			client.log(WARNING, "the VM is in run mode. Your modifications will be lost after reboot and an attacker could infect the VM")
+		res["ip"] = settings.get("VM_IP")
 		with open(glob.VM_PRIV_KEY, "r") as keyfile:
-			res["answer"]["key"] = keyfile.read()
+			res["key"] = keyfile.read()
 		return res
 
-def start(phase):
-	res={"success":True}
-
+def start(client, phase):
 	if glob.SERVER.VM_CONTROLLER.pid() is not None:
-		res["success"] = False
-		res[ERROR] = ["the VM is already running"]
-		return res
+		client.log(ERROR, "the VM is already running")
+		return None
 	glob.SERVER.VM_CONTROLLER.start(phase)
 
-	return res
+	return True
 
-def stop():
-	res={"success":True}
-
+def stop(client):
 	if glob.SERVER.VM_CONTROLLER.pid() is None:
-		res["success"] = False
-		res[ERROR] = ["the VM is already stopped"]
-		return res
+		client.log(ERROR, "the VM is already stopped")
+		return None
 	glob.SERVER.VM_CONTROLLER.stop()
 
-	return res
+	return True

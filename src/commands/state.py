@@ -10,18 +10,14 @@ import common.utils.settings as settings
 
 
 # Start HoneyWalt
-def start():
-	res={"success":True}
-
-
+def start(client):
 	#####################
 	#		CHECKS		#
 	#####################
 
 	if glob.SERVER.VM_CONTROLLER.pid() is not None:
-		res["success"] = False
-		res[ERROR] = ["please stop HoneyWalt before to start"]
-		return res
+		client.log(ERROR, "please stop HoneyWalt before to start")
+		return None
 
 
 	#####################
@@ -31,7 +27,7 @@ def start():
 	glob.RUN_CONFIG = get_conf()
 
 	if glob.CONFIG["need_commit"] == "True":
-		res[WARNING] = ["warning: you have uncommited changes. Running with the previous commited configuration"]
+		client.log(WARNING, "you have uncommited changes. Running with the previous commited configuration")
 
 	glob.SERVER.DOORS_CONTROLLER.reload(glob.RUN_CONFIG)
 	glob.SERVER.DOORS_CONTROLLER.start()
@@ -60,9 +56,8 @@ def start():
 	ips = glob.SERVER.VM_CONTROLLER.get_ips()
 
 	if not ips:
-		res["success"] = False
-		res[ERROR] = ["failed to get devices IPs"]
-		return res
+		client.log(ERROR, "failed to get devices IPs")
+		return None
 
 	for ip in ips:
 		dev = find(glob.RUN_CONFIG["device"], ip["id"], "id")
@@ -136,27 +131,22 @@ def start():
 	log(INFO, "starting exposed ports tunnels")
 	glob.SERVER.TUNNELS_CONTROLLER.start_expose_ports()
 
-	return res
+	return True
 
 
 # Commit some persistent information on the VM so it is taken
 # into acount on the next boot
-def commit(regen=True, force=False):
-	res={"success":True}
-
+def commit(client, regen=True, force=False):
 	if glob.SERVER.VM_CONTROLLER.pid() is not None:
-		res["success"] = False
-		res[ERROR] = ["please stop HoneyWalt before to commit"]
-		return res
+		client.log(ERROR, "please stop HoneyWalt before to commit")
+		return None
 
 	if glob.CONFIG["need_commit"] == "Empty":
-		res["success"] = False
-		res[ERROR] = ["Your configuration is empty"]
-		return res
+		client.log(ERROR, "Your configuration is empty")
+		return None
 	elif glob.CONFIG["need_commit"] == "False" and not force:
-		res["success"] = False
-		res[ERROR] = ["Nothing new to commit"]
-		return res
+		client.log(ERROR, "Nothing new to commit")
+		return None
 
 	if regen:
 		log(INFO, "generating cowrie configurations")
@@ -218,10 +208,10 @@ def commit(regen=True, force=False):
 	log(INFO, "stopping VM")
 	glob.SERVER.VM_CONTROLLER.stop()
 
-	return res
+	return True
 
 
-def stop():
+def stop(client):
 	# Tunnels and Cowrie
 	log(INFO, "stopping exposed ports tunnels")
 	glob.SERVER.TUNNELS_CONTROLLER.stop_expose_ports()
@@ -252,46 +242,46 @@ def stop():
 	log(INFO, "stopping doors firewalls")
 	glob.SERVER.DOORS_CONTROLLER.firewall_down()
 
-	return {"success":True}
+	return True
 
 
-def restart(regen=False):
-	res = {"success":True}
-
+def restart(client, regen=False):
 	# Stop
-	res_stop = stop(None)
-	if not res_stop["success"]:
-		return res_stop
+	res_stop = stop(client, None)
+	if not res_stop:
+		client.log(ERROR, "Failed to stop HoneyWalt")
+		return False
 
 	# Commit
 	if regen:
-		res_commit = commit(None, force=True)
-		if not res_commit["success"]:
-			return res_commit
+		res_commit = commit(client, None, force=True)
+		if not res_commit:
+			client.log(ERROR, "Failed to commit new changes")
+			return False
 	
 	# Start
-	res_start = start(None)
-	if not res_start["success"]:
-		return res_start
+	res_start = start(client, None)
+	if not res_start:
+		client.log(ERROR, "Failed to start HoneyWalt")
+		return False
 
-	return res
+	return True
 
 
-def status():
-	res={"success":True, "answer":{}}
+def status(client):
+	res = {}
 
 	# VM
 	vm_pid = glob.SERVER.VM_CONTROLLER.pid()
-	res["answer"]["running"] = vm_pid is not None
+	res["running"] = vm_pid is not None
 	if vm_pid is not None:
-		res["answer"]["vm_pid"] = vm_pid
+		res["vm_pid"] = vm_pid
 	
 	# Cowrie
-	nb_cowrie_pids = glob.SERVER.COWRIE_CONTROLLER.running_cowries()
-	res["answer"]["cowrie_instances"] = nb_cowrie_pids
+	res["cowrie_instances"] = glob.SERVER.COWRIE_CONTROLLER.running_cowries()
 	
 	# Configuration
-	res["answer"]["nb_devs"] = len(glob.CONFIG["device"])
-	res["answer"]["nb_doors"] = len(glob.CONFIG["door"])
+	res["nb_devs"] = len(glob.CONFIG["device"])
+	res["nb_doors"] = len(glob.CONFIG["door"])
 
 	return res

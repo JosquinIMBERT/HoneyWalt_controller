@@ -10,38 +10,31 @@ def match_value(val, unit):
 	return regex.match(val) is not None
 
 
-def set(throughput=None, latency=None):
-	res={"success":True}
-
+def set(client, throughput=None, latency=None):
 	if throughput is None and latency is None:
-		res["success"] = False
-		res[ERROR] = ["no new value was given"]
-		return res
+		client.log(ERROR, "no new value was given")
+		return None
 
 	if throughput is not None:
 		rate_unit = "[kmgt]?(bps|bit)"
 		if match_value(throughput, rate_unit):
 			glob.CONFIG["controller"]["throughput"] = throughput
 		else:
-			res["success"] = False
-			res[ERROR] = ["invalid throughput"]
-			return res
+			client.log(ERROR, "invalid throughput")
+			return None
 
 	if latency is not None:
 		time_unit = "[mu]?(s|sec|secs)"
 		if match_value(latency, time_unit):
 			glob.CONFIG["controller"]["latency"] = latency
 		else:
-			res["success"] = False
-			res[ERROR] = ["invalid latency"]
-			return res
+			client.log(ERROR, "invalid latency")
+			return None
 
 	glob.CONFIG["need_commit"] = "True"
 
-	return res
+	return True
 
 
-def show():
-	res={"success":True}
-	res["answer"] = glob.CONFIG["controller"]
-	return res
+def show(client):
+	return glob.CONFIG["controller"]

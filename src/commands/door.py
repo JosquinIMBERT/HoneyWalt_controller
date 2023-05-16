@@ -7,7 +7,7 @@ from common.utils.logs import *
 from common.utils.misc import *
 
 
-def add(ip, dev, client):
+def add(client, ip, dev):
 	# Check device (the device should be registered first)
 	device = find(glob.CONFIG["device"], dev, "node")
 	if device is None:
@@ -41,23 +41,19 @@ def add(ip, dev, client):
 		key = file.read()
 		return key
 	
-	return None
+	return True
 
 
-def chg(ip, new_ip=None, new_dev=None):
-	res={"success":True}
-
+def chg(client, ip, new_ip=None, new_dev=None):
 	if new_ip is None and new_dev is None:
-		res["success"] = False
-		res[ERROR] = ["no new value was given"]
-		return res
+		client.log(ERROR, "no new value was given")
+		return None
 
 	# Find the door
 	door = find(glob.CONFIG["door"], ip, "host")
 	if door is None:
-		res["success"] = False
-		res[ERROR] = ["door not found"]
-		return res
+		client.log(ERROR, "door not found")
+		return None
 
 	# Update the fields
 	if new_ip is not None:
@@ -65,34 +61,30 @@ def chg(ip, new_ip=None, new_dev=None):
 	if new_dev is not None:
 		door["dev"] = new_dev
 
+	if new_ip is not None or new_dev is not None:
+		glob.CONFIG["need_commit"] = "True"
+
 	# Show instructions
 	if new_ip is not None:
 		with open(glob.DOOR_PUB_KEY) as file:
 			key = file.read()
-			res["answer"] = {"key":key}
-		return res
+			return key
 
-	glob.CONFIG["need_commit"] = "True"
-
-	return res
+	return True
 
 
-def delete(ip):
-	res={"success":True}
-
+def delete(client, ip):
 	# Find the door
 	door = find_id(glob.CONFIG["door"], ip, "host")
 	if door == -1:
-		res["success"] = False
-		res[ERROR] = ["door not found"]
-		return res
+		client.log(ERROR, "door not found")
+		return None
 
 	del glob.CONFIG["door"][door]
 	glob.CONFIG["need_commit"] = "True"
 
-	return res
+	return True
 
 
 def show(client):
-	client.log(INFO, "test")
 	return glob.CONFIG["door"]

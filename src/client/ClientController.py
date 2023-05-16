@@ -63,7 +63,7 @@ class ClientService(rpyc.Service):
 			log_remote(level, self.remote_stdout, self.remote_stderr, *args, **kwargs)
 
 	def call(self, func, *args, **kwargs):
-		return json.dumps(func(*args, **kwargs))
+		return json.dumps(func(self, *args, **kwargs))
 
 
 
@@ -93,7 +93,7 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_door_add(self, ip, dev):
-		return self.call(commands.door.add, ip, dev, self)
+		return self.call(commands.door.add, ip, dev)
 
 	def exposed_door_chg(self, ip, new_ip=None, new_dev=None):
 		return self.call(commands.door.chg, ip, new_ip=new_ip, new_dev=new_dev)
@@ -102,7 +102,7 @@ class ClientService(rpyc.Service):
 		return self.call(commands.door.delete, ip)
 
 	def exposed_door_show(self):
-		return self.call(commands.door.show, self)
+		return self.call(commands.door.show)
 
 
 
@@ -111,10 +111,10 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_controller_set(self, throughput=None, latency=None):
-		return commands.controller.set(throughput=throughput, latency=latency)
+		return self.call(commands.controller.set, throughput=throughput, latency=latency)
 
 	def exposed_controller_show(self):
-		return commands.controller.show()
+		return self.call(commands.controller.show)
 
 
 
@@ -123,16 +123,16 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_device_add(self, name, mac, image, ports=[]):
-		return commands.device.add(name, mac, image, ports)
+		return self.call(commands.device.add, name, mac, image, ports)
 
 	def exposed_device_chg(self, name, new_name=None, new_image=None, new_ports=None):
-		return commands.device.chg(name, new_name=new_name, new_image=new_image, new_ports=new_ports)
+		return self.call(commands.device.chg, name, new_name=new_name, new_image=new_image, new_ports=new_ports)
 
 	def exposed_device_del(self, name):
-		return commands.device.delete(name)
+		return self.call(commands.device.delete, name)
 
 	def exposed_device_show(self):
-		return commands.device.show()
+		return self.call(commands.device.show)
 
 
 
@@ -141,16 +141,16 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_image_add(self, name, username="root", password="root"):
-		return commands.image.add(name, username=username, password=password)
+		return self.call(commands.image.add, name, username=username, password=password)
 
 	def exposed_image_chg(self, name, username=None, password=None):
-		return commands.image.chg(name, username=username, password=password)
+		return self.call(commands.image.chg, name, username=username, password=password)
 
 	def exposed_image_del(self, name):
-		return commands.image.delete(name)
+		return self.call(commands.image.delete, name)
 
 	def exposed_image_show(self):
-		return commands.image.show()
+		return self.call(commands.image.show)
 
 
 
@@ -159,10 +159,10 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_vm_shell(self):
-		return commands.vm.shell()
+		return self.call(commands.vm.shell)
 
 	def exposed_vm_start(self, phase):
-		return commands.vm.start(phase)
+		return self.call(commands.vm.start, phase)
 
 	def exposed_vm_stop(self):
-		return commands.vm.stop()
+		return self.call(commands.vm.stop)

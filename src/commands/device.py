@@ -7,9 +7,7 @@ from common.utils.logs import *
 from common.utils.misc import *
 
 
-def add(name, mac, image, ports=[]):
-	res={"success":True}
-
+def add(client, name, mac, image, ports=[]):
 	regex = re.compile(r'^(walt|docker|hub):[a-z0-9\-]+/[a-z0-9\-]+(:[a-z0-9\-]+)?$')
 	if regex.match(image):
 		log(WARNING, image+" seem to be a cloneable image link. Extracting short name")
@@ -17,14 +15,12 @@ def add(name, mac, image, ports=[]):
 
 	if find(glob.CONFIG["device"], name, "node") is not None or \
 	   find(glob.CONFIG["device"], mac, "mac") is not None:
-		res["success"] = False
-		res[ERROR] = ["device already exists"]
-		return res
+		client.log(ERROR, "device already exists")
+		return None
 	
 	if find(glob.CONFIG["image"], image, "short_name") is None:
-		res["success"] = False
-		res[ERROR] = ["image not found"]
-		return res
+		client.log(ERROR, "image not found")
+		return None
 
 	# Compute door ID
 	if len(glob.CONFIG["device"]) == 0:
@@ -43,12 +39,10 @@ def add(name, mac, image, ports=[]):
 	glob.CONFIG["device"] += [ new_dev ]
 	glob.CONFIG["need_commit"] = "True"
 
-	return res
+	return True
 
 
-def chg(name, new_name=None, new_image=None, new_ports=None):
-	res={"success":True}
-
+def chg(client, name, new_name=None, new_image=None, new_ports=None):
 	if new_image:
 		regex = re.compile(r'^(walt|docker|hub):[a-z0-9\-]+/[a-z0-9\-]+(:[a-z0-9\-]+)?$')
 		if regex.match(new_image):
@@ -57,22 +51,19 @@ def chg(name, new_name=None, new_image=None, new_ports=None):
 
 	device = find(glob.CONFIG["device"], name, "node")
 	if device is None:
-		res["success"] = False
-		res[ERROR] = ["device not found"]
-		return res
+		client.log(ERROR, "device not found")
+		return None
 
 	if new_name is not None:
 		if find(glob.CONFIG["device"], new_name, "node") is not None:
-			res["success"] = False
-			res[ERROR] = ["the new name for the device is already taken"]
-			return res
+			client.log(ERROR, "the new name for the device is already taken")
+			return None
 		device["node"] = new_name
 
 	if new_image is not None:
 		if find(glob.CONFIG["image"], new_image, "name") is None:
-			res["success"] = False
-			res[ERROR] = ["image not found"]
-			return res
+			client.log(ERROR, "image not found")
+			return None
 		device["image"] = new_image
 
 	if new_ports is not None:
@@ -80,31 +71,25 @@ def chg(name, new_name=None, new_image=None, new_ports=None):
 
 	glob.CONFIG["need_commit"] = "True"
 
-	return res
+	return True
 
 
-def delete(name):
-	res={"success":True}
-
+def delete(client, name):
 	dev_id = find_id(glob.CONFIG["device"], name, "node")
 	if dev_id == -1:
-		res["success"] = False
-		res[ERROR] = ["unable to find device "+name]
-		return res
+		client.log(ERROR, "unable to find device "+name)
+		return None
 
 	door = find(glob.CONFIG["door"], glob.CONFIG["device"][dev_id]["node"], "dev")
 	if door is not None:
-		res["success"] = False
-		res[ERROR] = ["door "+door["host"]+" uses device "+name]
-		return res
+		client.log(ERROR, "door "+door["host"]+" uses device "+name)
+		return None
 
 	del glob.CONFIG["device"][dev_id]
 	glob.CONFIG["need_commit"] = "True"
 
-	return res
+	return True
 
 
-def show():
-	res={"success":True}
-	res["answer"] = glob.CONFIG["device"]
-	return res
+def show(client):
+	return glob.CONFIG["device"]
