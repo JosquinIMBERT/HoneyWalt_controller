@@ -39,28 +39,38 @@ class ClientController(Controller):
 
 class ClientService(rpyc.Service):
 	def __init__(self):
-		log(INFO, "Creating the ClientService")
 		self.remote_stdout = None
 		self.remote_stderr = None
+		self.loglevel = INFO
 
 	def __del__(self):
-		log(INFO, "Deleting the ClientService")
+		del self.remote_stdout
+		del self.remote_stderr
+		del self.loglevel
 
 	def on_connect(self, conn):
-		log(INFO,"New connection from", conn)
+		log(INFO, self.__class__.__name__+": New connection")
 
 	def on_disconnect(self, conn):
-		log(INFO, "End of connection with", conn)
+		log(INFO, self.__class__.__name__+": End of connection")
 
 	def exposed_set_stdout(self, stdout):
+		# TODO: verify what the client is giving as argument
 		self.remote_stdout = stdout
 
 	def exposed_set_stderr(self, stderr):
+		# TODO: verify what the client is giving as argument
 		self.remote_stderr = stderr
+
+	def exposed_set_log_level(self, loglevel):
+		if loglevel not in [COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL]:
+			self.log(ERROR, "invalid loglevel")
+		else:
+			self.loglevel = loglevel
 
 	def log(self, level, *args, **kwargs):
 		if self.remote_stdout is not None and self.remote_stderr is not None:
-			log_remote(level, self.remote_stdout, self.remote_stderr, *args, **kwargs)
+			log_remote(level, self.loglevel, self.remote_stdout, self.remote_stderr, *args, **kwargs)
 
 	def call(self, func, *args, **kwargs):
 		return json.dumps(func(self, *args, **kwargs))
