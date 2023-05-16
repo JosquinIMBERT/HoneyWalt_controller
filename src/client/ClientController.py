@@ -62,6 +62,9 @@ class ClientService(rpyc.Service):
 		if self.remote_stdout is not None and self.remote_stderr is not None:
 			log_remote(level, self.remote_stdout, self.remote_stderr, *args, **kwargs)
 
+	def call(self, func, *args, **kwargs):
+		return json.dumps(func(*args, **kwargs))
+
 
 
 	##################
@@ -69,19 +72,19 @@ class ClientService(rpyc.Service):
 	##################
 	
 	def exposed_start(self):
-		return commands.state.start()
+		return self.call(commands.state.start)
 
 	def exposed_commit(self, regen=True):
-		return commands.state.commit(regen=regen)
+		return self.call(commands.state.commit, regen=regen)
 
 	def exposed_stop(self):
-		return commands.state.stop()
+		return self.call(commands.state.stop)
 
 	def exposed_restart(self, regen=False):
-		return commands.state.restart(regen=regen)
+		return self.call(commands.state.restart, regen=regen)
 
 	def exposed_status(self):
-		return commands.status()
+		return self.call(commands.status)
 
 
 
@@ -90,16 +93,16 @@ class ClientService(rpyc.Service):
 	##################
 
 	def exposed_door_add(self, ip, dev):
-		return commands.door.add(ip, dev, self)
+		return self.call(commands.door.add, ip, dev, self)
 
 	def exposed_door_chg(self, ip, new_ip=None, new_dev=None):
-		return commands.door.chg(ip, new_ip=new_ip, new_dev=new_dev)
+		return self.call(commands.door.chg, ip, new_ip=new_ip, new_dev=new_dev)
 
 	def exposed_door_del(self, ip):
-		return commands.door.delete(ip)
+		return self.call(commands.door.delete, ip)
 
 	def exposed_door_show(self):
-		return commands.door.show(self)
+		return self.call(commands.door.show, self)
 
 
 
