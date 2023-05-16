@@ -4,6 +4,7 @@ import os, rpyc, sys
 # Internal
 from common.door.proto import *
 from common.utils.controller import Controller
+from common.utils.files import *
 from common.utils.logs import *
 from common.utils.misc import get_public_ip
 from common.utils.rpc import IPService
