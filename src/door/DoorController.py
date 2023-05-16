@@ -1,5 +1,5 @@
 # External
-import os, rpyc, sys
+import json, os, rpyc, sys
 
 # Internal
 from common.door.proto import *
