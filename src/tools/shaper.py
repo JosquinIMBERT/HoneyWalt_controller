@@ -39,18 +39,12 @@ class TrafficShaper:
 			with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_sock:
 				udp_sock.bind((self.udp_listen_host, self.udp_listen_port))
 				with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_sock:
-					i=0
-					while i<6: # ~30sec
-						try:
-							tcp_sock.connect((self.tcp_host, self.tcp_port))
-						except:
-							time.sleep(5)
-						else:
-							break
-						i+=1
-					if i>=6:
-						log(ERROR, "TrafficShaper.controller_tunnel: failed to connect to the door")
-						sys.exit(1)
+					try:
+						tcp_sock.connect((self.tcp_host, self.tcp_port))
+					except:
+						log(DEBUG, "TrafficShaper.controller_tunnel: failed to connect to the door")
+						time.sleep(5) # We wait 5 seconds before to retry
+						continue
 
 					sel_list = [udp_sock, tcp_sock]
 					try:
