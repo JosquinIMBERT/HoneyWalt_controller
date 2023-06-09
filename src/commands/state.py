@@ -38,7 +38,6 @@ def start(client):
 
 	glob.SERVER.TUNNELS_CONTROLLER.init_run()
 	glob.SERVER.COWRIE_CONTROLLER.init_run()
-	glob.SERVER.TRAFFIC_CONTROLLER.init_run()
 
 
 	#####################
@@ -105,8 +104,6 @@ def start(client):
 	glob.SERVER.DOORS_CONTROLLER.wg_up()
 	log(INFO, "starting doors traffic-shaper")
 	glob.SERVER.DOORS_CONTROLLER.traffic_shaper_up()
-	log(INFO, "starting local traffic-shaper")
-	glob.SERVER.TRAFFIC_CONTROLLER.traffic_shaper_up()
 
 
 	#####################
@@ -221,8 +218,6 @@ def stop(client):
 	glob.SERVER.TUNNELS_CONTROLLER.stop_cowrie_tunnels_dmz()
 	
 	# Traffic Shaper
-	log(INFO, "stopping traffic shaper on controller side")
-	glob.SERVER.TRAFFIC_CONTROLLER.traffic_shaper_down()
 	log(INFO, "stopping traffic shaper on doors side")
 	glob.SERVER.DOORS_CONTROLLER.traffic_shaper_down()
 	
