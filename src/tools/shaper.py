@@ -53,7 +53,7 @@ class TrafficShaper:
 					try:
 						connected = True
 						while self.keep_running and connected:
-							rready, _, _ = select.select(sel_list, [], [])
+							rready, _, _ = select.select(sel_list, [], [], 5)
 							for ready in rready:
 								if ready is udp_sock:
 									msg, addr = udp_sock.recvfrom(1024)
