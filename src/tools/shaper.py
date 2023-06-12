@@ -20,7 +20,7 @@ import glob
 class TrafficShaper:
 	def __init__(self, tcp_host, tcp_port, udp_listen_port):
 		self.keep_running = False
-		self.udp_listen_host = "127.0.0.1"
+		self.udp_listen_host = "0.0.0.0"
 		self.udp_listen_port = udp_listen_port
 		self.tcp_host = tcp_host
 		self.tcp_port = tcp_port
