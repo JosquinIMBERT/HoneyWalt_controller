@@ -61,7 +61,7 @@ class TrafficShaper:
 										connected = False
 										break
 									self.udp_host, self.udp_port = addr
-									msg = encode_len(msg) + msg
+									msg = self.encode_len(msg) + msg
 									tcp_sock.sendall(msg)
 								elif ready is tcp_sock:
 									msg = tcp_sock.recv(1024)
@@ -71,7 +71,7 @@ class TrafficShaper:
 									if self.udp_host is not None and self.udp_port is not None:
 										while msg:
 											blen, msg = msg[0:2], msg[2:]
-											length = decode_len(blen)
+											length = self.decode_len(blen)
 											to_send, msg = msg[:length], msg[length:]
 											if self.udp_host is None or self.udp_port is None:
 												log(ERROR, "TrafficShaper.controller_tunnel: Receiving external traffic before any outgoing wireguard traffic was observed")
