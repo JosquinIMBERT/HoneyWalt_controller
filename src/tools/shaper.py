@@ -3,6 +3,9 @@ import argparse, os, select, socket, sys, threading, time
 
 # TODO: Use python-iptables and shapy (pip3 install --upgrade python-iptables && pip3 install shapy)
 
+if __name__ == "__main__":
+	sys.path[0] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Internal
 from common.utils.logs import *
 import glob
@@ -91,3 +94,24 @@ class TrafficShaper:
 		self.thread.join()
 		self.udp_host = None
 		self.udp_port = None
+
+	def wait(self):
+		self.thread.join()
+
+if __name__ == "__main__":
+	import argparse
+
+	parser = argparse.ArgumentParser(description="Run the controller's TrafficShaper")
+	parser.add_argument("-up", "--udp-port", nargs=1, help="UDP Port to listen on", default=[6000])
+	parser.add_argument("-th", "--tcp-host", nargs=1, help="TCP Host to connect to",  default=["1.2.3.4"])
+	parser.add_argument("-tp", "--tcp-port", nargs=1, help="TCP Port to connect to",  default=[51819])
+
+	options = parser.parse_args()
+	tcp_host = options.tcp_host[0]
+	tcp_port = options.tcp_port[0]
+	udp_listen_port = options.udp_port[0]
+
+	ts = TrafficShaper(tcp_host, tcp_port, udp_listen_port)
+	ts.start()
+	ts.wait()
+	del ts
