@@ -11,7 +11,7 @@ from common.utils.rpc import IPService
 from common.utils.sockets import ClientSocket
 
 class DoorController():
-	def __init__(self, door, timeout=1):
+	def __init__(self, door, timeout=10):
 		log(DEBUG, "Creating the DoorController for "+str(door["host"]))
 		self.timeout = timeout
 		self.door = door
