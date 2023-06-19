@@ -6,16 +6,13 @@ from common.utils.logs import *
 from common.utils.misc import *
 import common.utils.settings as settings
 
-#from door.controller import DoorController
-from door.DoorController import DoorController
-from tools.shaper import TrafficShaper
+from door.controller import DoorController
 import glob
 
 class DoorGlobalController:
 	def __init__(self):
 		log(INFO, "DoorGlobalController.__init__: creating the DoorGlobalController")
 		self.controllers = {}
-		self.shapers = {}
 
 	def __del__(self):
 		for door_id, controller in self.controllers.items():
@@ -25,17 +22,9 @@ class DoorGlobalController:
 		log(INFO, "DoorGlobalController.reload: reloading the DoorGlobalController")
 		for door_id, controller in self.controllers.items():
 			del controller
-		for door_id, shaper in self.shapers.items():
-			del shaper
 		self.controllers = {}
-		self.shapers = {}
 		for door in config["door"]:
 			self.controllers[str(door["id"])] = DoorController(door)
-			self.shapers[str(door["id"])] = TrafficShaper(
-				door["host"],
-				settings.get("WG_TCP_PORT"),
-				settings.get("WIREGUARD_PORTS")+int(door["id"])
-			)
 
 	def firewall_up(self):
 		for door_id, controller in self.controllers.items():
@@ -71,11 +60,7 @@ class DoorGlobalController:
 	def traffic_shaper_up(self):
 		for door_id, controller in self.controllers.items():
 			controller.traffic_shaper_up()
-		for door_id, shaper in self.shapers.items():
-			shaper.start()
 
 	def traffic_shaper_down(self):
-		for door_id, shaper in self.shapers.items():
-			shaper.stop()
 		for door_id, controller in self.controllers.items():
 			controller.traffic_shaper_down()

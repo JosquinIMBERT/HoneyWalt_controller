@@ -8,6 +8,7 @@ if __name__ == "__main__":
 
 # Internal
 from common.utils.logs import *
+from common.utils.shaper import Shaper
 import glob
 
 # The TrafficShaper is used to transorm wireguard UDP traffic into TCP traffic to bypass internet firewalls
@@ -97,6 +98,17 @@ class TrafficShaper:
 
 	def wait(self):
 		self.thread.join()
+
+class ControllerShaper(Shaper):
+	def __init__(self, udp_listen_port, timeout=5):
+		super().__init__(name="CTRL", timeout=timeout)
+
+		# Local UDP host and port
+		self.udp_listen_host = "0.0.0.0"
+		self.udp_listen_port = udp_listen_port
+
+	def prepare(self):
+		self.sock.bind((self.udp_listen_host, self.udp_listen_port))
 
 if __name__ == "__main__":
 	import argparse

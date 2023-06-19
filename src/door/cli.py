@@ -6,8 +6,7 @@ sys.path[0] = os.path.join(os.environ["HONEYWALT_CONTROLLER_HOME"],"src/")
 import glob
 from config import get_conf
 from common.door.proto import *
-#from door.controller import *
-from door.DoorController import DoorController
+from door.controller import DoorController
 from common.utils.files import *
 from common.utils.logs import *
 
