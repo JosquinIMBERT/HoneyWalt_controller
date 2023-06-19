@@ -17,8 +17,9 @@ class ControllerService(IPService):
 		super().__init__()
 		self.local_shaper = None
 
-	def on_connect(self):
-		self.local_shaper = self._conn._config["local_shaper"]
+	def on_connect(self, conn):
+		self.conn = conn
+		self.local_shaper = self.conn._config["local_shaper"]
 
 	def exposed_forward(self, packet):
 		self.local_shaper.forward(packet)
