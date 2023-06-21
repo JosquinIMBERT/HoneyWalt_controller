@@ -30,11 +30,16 @@ class ClientController():
 			cert_reqs=ssl.CERT_REQUIRED,
 			ssl_version=ssl.PROTOCOL_TLS
 		)
-		self.service_thread = ThreadedServer(ClientService, port=CLIENT_PORT, authenticator=authenticator)
+		self.threaded_server = ThreadedServer(ClientService, port=CLIENT_PORT, authenticator=authenticator)
+		self.service_thread = threading.Thread(target=self.run)
 		self.service_thread.start()
 
+	def run(self):
+		self.threaded_server.start()
+
 	def stop(self):
-		self.service_thread.close()
+		if self.threaded_server is not None: self.threaded_server.close()
+		if self.service_thread is not None: self.service_thread.close()
 
 class ClientService(AbstractService):
 	def __init__(self):
