@@ -43,8 +43,10 @@ class DoorController():
 		self.conn.root.set_stdout(sys.stdout)
 		self.conn.root.set_stderr(sys.stderr)
 		self.conn.root.set_log_level(LOG_LEVEL)
+		self.background_service = rpyc.BgServingThread(self.conn)
 
 	def __del__(self):
+		self.background_service.stop()
 		del self.timeout
 		del self.door
 		del self.conn
