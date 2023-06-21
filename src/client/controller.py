@@ -39,7 +39,7 @@ class ClientController():
 
 	def stop(self):
 		if self.threaded_server is not None: self.threaded_server.close()
-		if self.service_thread is not None: self.service_thread.close()
+		if self.service_thread is not None: self.service_thread.join()
 
 class ClientService(AbstractService):
 	def __init__(self):
