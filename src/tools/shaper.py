@@ -100,7 +100,7 @@ class TrafficShaper:
 		self.thread.join()
 
 class ControllerShaper(Shaper):
-	def __init__(self, udp_listen_port, timeout=5):
+	def __init__(self, udp_listen_port, timeout=60):
 		super().__init__(name="CTRL", timeout=timeout)
 
 		# Local UDP host and port
