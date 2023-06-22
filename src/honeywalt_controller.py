@@ -40,11 +40,47 @@ class ControllerServer:
 		self.CLIENT_CONTROLLER.start()
 
 	def stop(self):
-		self.CLIENT_CONTROLLER.stop()
-		self.VM_CONTROLLER.stop()
-		self.COWRIE_CONTROLLER.stop()
-		self.TUNNELS_CONTROLLER.stop()
-		del self.DOORS_CONTROLLER
+		try: self.CLIENT_CONTROLLER.stop()
+		except Exception as err:
+			log(ERROR, "ControllerServer.stop: failed to stop the client controller")
+			log(ERROR, "ControllerServer.stop:", err)
+		else:
+			log(INFO, "ControllerServer.stop: client controller successfully stopped")
+
+		try: self.VM_CONTROLLER.stop()
+		except Exception as err:
+			log(ERROR, "ControllerServer.stop: failed to stop the vm controller")
+			log(ERROR, "ControllerServer.stop:", err)
+		else:
+			log(INFO, "ControllerServer.stop: vm controller successfully stopped")
+
+		try: self.COWRIE_CONTROLLER.stop()
+		except Exception as err:
+			log(ERROR, "ControllerServer.stop: failed to stop the cowrie controller")
+			log(ERROR, "ControllerServer.stop:", err)
+		else:
+			log(INFO, "ControllerServer.stop: cowrie controller successfully stopped")
+
+		try: self.TUNNELS_CONTROLLER.stop()
+		except Exception as err:
+			log(ERROR, "ControllerServer.stop: failed to stop the tunnels controller")
+			log(ERROR, "ControllerServer.stop:", err)
+		else:
+			log(INFO, "ControllerServer.stop: tunnels controller successfully stopped")
+
+		try: self.TRAFFIC_CONTROLLER.stop_control()
+		except Exception as err:
+			log(ERROR, "ControllerServer.stop: failed to stop the traffic controller")
+			log(ERROR, "ControllerServer.stop:", err)
+		else:
+			log(INFO, "ControllerServer.stop: traffic controller successfully stopped")
+
+		try: del self.DOORS_CONTROLLER
+		except Exception as err:
+			log(ERROR, "ControllerServer.stop: failed to stop the doors controller")
+			log(ERROR, "ControllerServer.stop:", err)
+		else:
+			log(INFO, "ControllerServer.stop: doors controller successfully stopped")
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='HoneyWalt Controller Daemon')
