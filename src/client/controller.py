@@ -43,7 +43,7 @@ class ClientController():
 
 class ClientService(AbstractService):
 	def __init__(self):
-		AbstractService.__init__(self)
+		AbstractService.__init__(self, ignore_client=False)
 
 	##################
 	#      STATE     #
