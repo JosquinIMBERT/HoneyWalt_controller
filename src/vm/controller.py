@@ -10,9 +10,10 @@ from common.vm.proto import *
 from common.utils.sockets import ServerSocket
 
 class VMController(Controller):
-	def __init__(self):
+	def __init__(self, server):
 		Controller.__init__(self)
 		log(INFO, self.get_name()+".__init__: creating the VMController")
+		self.server = server
 		self.socket = ServerSocket(CONTROL_PORT, addr=socket.VMADDR_CID_HOST, socktype=socket.AF_VSOCK, reusable = True)
 		self.socket.set_name("Socket(Controller-VM)")
 		self.phase = None

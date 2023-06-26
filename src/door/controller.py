@@ -25,14 +25,21 @@ class ControllerService(IPService):
 		self.local_shaper.forward(packet)
 
 class DoorController():
-	def __init__(self, door, timeout=10):
-		log(DEBUG, "Creating the DoorController for "+str(door["host"]))
+	def __init__(self, server, honeypot, timeout=10):
+		# Honeypot information
+		self.honeyid = honeypot["id"]
+		self.honeypot = honeypot
+
+		log(DEBUG, "Creating the DoorController for "+str(self.honeypot["door"]["host"]))
+		
+		self.server = server
 		self.timeout = timeout
-		self.door = door
-		self.shaper = ControllerShaper(settings.get("WIREGUARD_PORTS")+int(door["id"]))
+		self.shaper = ControllerShaper(settings.get("WIREGUARD_PORTS")+self.honeyid)
 		self.shaper.set_peer(self)
+		
+		# RPyC connection to the door
 		self.conn = rpyc.ssl_connect(
-			self.door["host"],
+			self.honeypot["door"]["host"],
 			port=DOOR_PORT,
 			config={"allow_public_attrs": True, "sync_request_timeout": self.timeout, "local_shaper": self.shaper},
 			keyfile=to_root_path("var/key/pki/private/controller-client.key"),
@@ -45,55 +52,90 @@ class DoorController():
 		self.conn.root.set_log_level(LOG_LEVEL)
 		self.background_service = rpyc.BgServingThread(self.conn)
 
+		# Sending initial configuration to the door
+		self.set_config()
+
 	def __del__(self):
 		self.background_service.stop()
 		del self.timeout
-		del self.door
 		del self.conn
 
 	def call(self, func, *args, **kwargs):
 		return json.loads(func(*args, **kwargs))
 
-	# CMD_DOOR_FIREWALL_UP
 	def firewall_up(self):
 		return self.call(self.conn.root.firewall_up)
 
-	# CMD_DOOR_FIREWALL_DOWN
 	def firewall_down(self):
 		return self.call(self.conn.root.firewall_down)
 
-	# CMD_DOOR_WG_KEYGEN
 	def wg_keygen(self):
 		res = self.call(self.conn.root.wg_keygen)
-		res["host"] = self.door["host"]
+		self.honeypot["door"]["pubkey"] = res["pubkey"]
+		self.honeypot["door"]["privkey"] = res["privkey"]
 		return res
 
-	# CMD_DOOR_WG_UP
 	def wg_up(self):
 		return self.call(self.conn.root.wg_up)
 
-	# CMD_DOOR_WG_DOWN
 	def wg_down(self):
 		return self.call(self.conn.root.wg_down)
 
-	# CMD_DOOR_WG_RESET
 	def wg_reset(self):
 		return self.call(self.conn.root.wg_reset)
 
-	# CMD_DOOR_WG_ADD_PEER
-	def wg_add_peer(self, pubkey, dev_id):
-		return self.call(self.conn.root.wg_add_peer, pubkey, dev_id)
+	def wg_set_peer(self):
+		pubkey = self.honeypot["device"]["pubkey"]
+		return self.call(self.conn.root.wg_set_peer, pubkey)
 
-	# CMD_DOOR_TRAFFIC_SHAPER_UP
 	def traffic_shaper_up(self):
 		res = self.call(self.conn.root.traffic_shaper_up)
 		self.shaper.start()
 		return res
 
-	# CMD_DOOR_TRAFFIC_SHAPER_DOWN
 	def traffic_shaper_down(self):
 		self.shaper.stop()
 		return self.call(self.conn.root.traffic_shaper_down)
 
+	def cowrie_start(self):
+		return self.call(self.conn.root.cowrie_start)
+
+	def cowrie_stop(self):
+		return self.call(self.conn.root.cowrie_stop)
+
+	def cowrie_configure(self):
+		return self.call(self.conn.root.cowrie_configure)
+
+	def cowrie_is_running(self):
+		return self.call(self.conn.root.cowrie_is_running)
+
 	def forward(self, packet):
 		return self.call(self.conn.root.forward, packet)
+
+	def set_config(self):
+		config = {
+			"honeypot": {
+				"id": self.honeyid,
+				"door": {
+					"privkey": None,
+					"pubkey": None
+				},
+				"device": {
+					"pubkey": None
+				},
+				"credentials": {
+					"user": self.honeypot["credentials"]["user"],
+					"pass": self.honeypot["credentials"]["pass"]
+				}
+			},
+			"hpfeeds": {
+				"server": self.server.run_config["hpfeeds"]["server"],
+				"port": self.server.run_config["hpfeeds"]["port"],
+				"identifier": self.server.run_config["hpfeeds"]["identifier"],
+				"secret": self.server.run_config["hpfeeds"]["secret"]
+			}
+		}
+		return self.call(self.conn.root.set_config, config)
+
+	def commit(self):
+		return self.call(self.conn.root.commit)

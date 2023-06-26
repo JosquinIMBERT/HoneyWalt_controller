@@ -4,20 +4,17 @@ from rpyc.utils.server import ThreadedServer
 from rpyc.utils.authenticators import SSLAuthenticator
 
 # Internal
-import commands.controller
-import commands.device
-import commands.door
-import commands.image
-import commands.state
-import commands.vm
-from common.client.proto import *
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.rpc import AbstractService
 
 class ClientController():
-	def __init__(self):
+
+	CLIENT_PORT = 9999
+
+	def __init__(self, server):
 		log(INFO, "Creating the ClientController")
+		self.server = server
 
 	def __del__(self):
 		log(INFO, "Deleting the ClientController")
@@ -30,7 +27,8 @@ class ClientController():
 			cert_reqs=ssl.CERT_REQUIRED,
 			ssl_version=ssl.PROTOCOL_TLS
 		)
-		self.threaded_server = ThreadedServer(ClientService, port=CLIENT_PORT, authenticator=authenticator)
+		ClientService = CustomizedClientService(self.server)
+		self.threaded_server = ThreadedServer(ClientService, port=ClientController.CLIENT_PORT, authenticator=authenticator)
 		self.service_thread = threading.Thread(target=self.run)
 		self.service_thread.start()
 
@@ -41,106 +39,84 @@ class ClientController():
 		if self.threaded_server is not None: self.threaded_server.close()
 		if self.service_thread is not None: self.service_thread.join()
 
-class ClientService(AbstractService):
-	def __init__(self):
-		AbstractService.__init__(self, ignore_client=False)
 
-	##################
-	#      STATE     #
-	##################
-	
-	def exposed_start(self):
-		return self.call(commands.state.start)
+# This function customizes the ClientService class so that it takes the server as a parameter parameter
+def CustomizedClientService(server):
+	class ClientService(AbstractService):
+		def __init__(self):
+			AbstractService.__init__(self, ignore_client=False)
 
-	def exposed_commit(self, regen=True):
-		return self.call(commands.state.commit, regen=regen)
-
-	def exposed_stop(self):
-		return self.call(commands.state.stop)
-
-	def exposed_restart(self, regen=False):
-		return self.call(commands.state.restart, regen=regen)
-
-	def exposed_status(self):
-		return self.call(commands.status)
+			self.server = server
 
 
 
-	##################
-	#      DOOR      #
-	##################
+		##################
+		#      STATE     #
+		##################
+		
+		def exposed_start(self):
+			return self.call(self.server.state_manager.start)
 
-	def exposed_door_add(self, ip, dev):
-		return self.call(commands.door.add, ip, dev)
+		def exposed_commit(self, regen=True):
+			return self.call(self.server.state_manager.commit, regen=regen)
 
-	def exposed_door_chg(self, ip, new_ip=None, new_dev=None):
-		return self.call(commands.door.chg, ip, new_ip=new_ip, new_dev=new_dev)
+		def exposed_stop(self):
+			return self.call(self.server.state_manager.stop)
 
-	def exposed_door_del(self, ip):
-		return self.call(commands.door.delete, ip)
+		def exposed_restart(self, regen=False):
+			return self.call(self.server.state_manager.restart, regen=regen)
 
-	def exposed_door_show(self):
-		return self.call(commands.door.show)
-
-
-
-	##################
-	#   CONTROLLER   #
-	##################
-
-	def exposed_controller_set(self, throughput=None, latency=None):
-		return self.call(commands.controller.set, throughput=throughput, latency=latency)
-
-	def exposed_controller_show(self):
-		return self.call(commands.controller.show)
+		def exposed_status(self):
+			return self.call(self.server.state_manager.status)
 
 
 
-	##################
-	#     DEVICE     #
-	##################
+		##################
+		#    HONEYPOT    #
+		##################
 
-	def exposed_device_add(self, name, mac, image, ports=[]):
-		return self.call(commands.device.add, name, mac, image, ports)
+		def exposed_honeypot_add(self, door, device_name, device_mac, image, username=None, password=None, ports=None):
+			return self.call(self.server.honeypot_manager.add,
+				door,
+				device_name,
+				device_mac,
+				image,
+				username=username,
+				password=password,
+				ports=ports
+			)
 
-	def exposed_device_chg(self, name, new_name=None, new_image=None, new_ports=None):
-		return self.call(commands.device.chg, name, new_name=new_name, new_image=new_image, new_ports=new_ports)
+		def exposed_honeypot_chg(self, ident, door=None, device_name=None, device_mac=None, image=None, username=None, password=None, ports=None):
+			return self.call(self.server.honeypot_manager.change,
+				ident,
+				door=door,
+				device_name=device_name,
+				device_mac=device_mac,
+				image=image,
+				username=username,
+				password=password,
+				ports=ports
+			)
 
-	def exposed_device_del(self, name):
-		return self.call(commands.device.delete, name)
+		def exposed_honeypot_del(self, ident):
+			return self.call(self.server.honeypot_manager.delete, ident)
 
-	def exposed_device_show(self):
-		return self.call(commands.device.show)
-
-
-
-	##################
-	#      IMAGE     #
-	##################
-
-	def exposed_image_add(self, name, username="root", password="root"):
-		return self.call(commands.image.add, name, username=username, password=password)
-
-	def exposed_image_chg(self, name, username=None, password=None):
-		return self.call(commands.image.chg, name, username=username, password=password)
-
-	def exposed_image_del(self, name):
-		return self.call(commands.image.delete, name)
-
-	def exposed_image_show(self):
-		return self.call(commands.image.show)
-
+		def exposed_honeypot_show(self):
+			return self.call(self.server.honeypot_manager.show)
 
 
-	##################
-	#       VM       #
-	##################
 
-	def exposed_vm_shell(self):
-		return self.call(commands.vm.shell)
+		##################
+		#       VM       #
+		##################
 
-	def exposed_vm_start(self, phase):
-		return self.call(commands.vm.start, phase)
+		def exposed_vm_shell(self):
+			return self.call(self.vm_manager.shell)
 
-	def exposed_vm_stop(self):
-		return self.call(commands.vm.stop)
+		def exposed_vm_start(self, phase):
+			return self.call(self.vm_manager.start, phase)
+
+		def exposed_vm_stop(self):
+			return self.call(self.vm_manager.stop)
+
+	return ClientService

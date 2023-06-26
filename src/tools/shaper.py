@@ -4,7 +4,6 @@ import argparse, os, select, socket, sys, threading, time
 # Internal
 from common.utils.logs import *
 from common.utils.shaper import Shaper
-import glob
 
 # The Traffic Shaper is used to transorm wireguard UDP traffic into TCP traffic to bypass internet firewalls.
 # For the sake of simplicity and since we don't care about performance (bad performance on the attacker's

@@ -8,11 +8,15 @@ from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
 import common.utils.settings as settings
-import glob
 
 class TrafficController:
-	def __init__(self):
+
+	LATENCY = 
+	THROUGHPUT = 
+
+	def __init__(self, server):
 		log(INFO, "TrafficController.__init__: creating the TrafficController")
+		self.server = server
 
 	def __del__(self):
 		pass
@@ -22,9 +26,9 @@ class TrafficController:
 		IP_FOR_DMZ = settings.get("IP_FOR_DMZ")
 
 		dev = "tap-out"
-		latency = glob.RUN_CONFIG["controller"]["latency"]
-		throughput = glob.RUN_CONFIG["controller"]["throughput"]
-		ports = ",".join([str(WIREGUARD_PORTS+dev["id"]) for dev in glob.RUN_CONFIG["device"]])
+		latency = TrafficController.LATENCY
+		throughput = TrafficController.THROUGHPUT
+		ports = ",".join([str(WIREGUARD_PORTS+honeypot["id"]) for honeypot in self.server.run_config["honeypots"]])
 
 		prog = to_root_path("src/script/control-up.sh")
 		args = dev+" "+IP_FOR_DMZ+" "+latency+" "+throughput+" "+ports

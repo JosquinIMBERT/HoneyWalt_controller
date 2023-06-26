@@ -9,11 +9,17 @@ from common.utils.logs import *
 from common.utils.misc import *
 import common.utils.settings as settings
 from common.utils.system import *
-import glob
 
 class TunnelsController:
-	def __init__(self):
+
+	VM_PRIV_KEY   = to_root_path("var/key/id_olim")
+	VM_PUB_KEY    = to_root_path("var/key/id_olim.pub")
+	DOOR_PRIV_KEY = to_root_path("var/key/id_door")
+	DOOR_PUB_KEY  = to_root_path("var/key/id_door.pub")
+
+	def __init__(self, server):
 		log(INFO, "TunnelsController.__init__: creating the TunnelsController")
+		self.server = server
 
 	def __del__(self):
 		pass
@@ -30,46 +36,44 @@ class TunnelsController:
 	def start_cowrie_dmz(self):
 		BACKEND_PORTS = settings.get("BACKEND_PORTS")
 
-		for dev in glob.RUN_CONFIG["device"]:
+		for honeypot in self.server.run_config["honeypots"]:
 			self.start_tunnel_controller_dmz(
 				to_root_path("run/ssh/cowrie-dmz/"),
-				BACKEND_PORTS+dev["id"],
-				dev["ip"],
+				BACKEND_PORTS+honeypot["id"],
+				honeypot["device"]["ip"],
 				22
 			)
 
 	def start_door_cowrie(self):
 		LISTEN_PORTS = settings.get("LISTEN_PORTS")
 
-		for door in glob.RUN_CONFIG["door"]:
-			dev = find(glob.RUN_CONFIG["device"], door["dev"], "node")
+		for honeypot in self.server.run_config["honeypots"]:
 			self.start_tunnel_door_controller(
 				to_root_path("run/ssh/cowrie-out/"),
 				22,
-				LISTEN_PORTS+dev["id"],
-				door
+				LISTEN_PORTS+honeypot["id"],
+				honeypot["door"]["host"]
 			)
 
 	# For additional ports (not ssh)
 	def start_expose_ports(self):
 		EXPOSE_PORTS = settings.get("EXPOSE_PORTS")
 
-		for dev in glob.RUN_CONFIG["device"]:
-			door = find(glob.RUN_CONFIG["door"], dev["node"], "dev")
-			for port in dev["ports"]:
+		for honeypot in self.server.run_config["honeypots"]:
+			for port in honeypot["ports"]:
 				# Controller --> Device
 				self.start_tunnel_controller_dmz(
 					to_root_path("run/ssh/expose-dmz/"),
-					EXPOSE_PORTS+dev["id"],
-					dev["ip"],
+					EXPOSE_PORTS+honeypot["id"],
+					honeypot["device"]["ip"],
 					port
 				)
 				# Door --> Controller
 				self.start_tunnel_door_controller(
 					to_root_path("run/ssh/expose-out/"),
 					port,
-					EXPOSE_PORTS+dev["id"],
-					door
+					EXPOSE_PORTS+honeypot["id"],
+					honeypot["door"]["host"]
 				)
 
 
@@ -121,7 +125,7 @@ class TunnelsController:
 			"socket": self.gen_sock_filename(socketdir),
 			"door_port": door_port,
 			"local_port": local_port,
-			"key_path": glob.DOOR_PRIV_KEY,
+			"key_path": TunnelsController.DOOR_PRIV_KEY,
 			"host": door["host"],
 			"realssh_port": door["realssh"]
 		})
@@ -143,7 +147,7 @@ class TunnelsController:
 			"ip": dev_ip,
 			"dev_port": dev_port,
 			"vm_ip": VM_IP,
-			"key_path": glob.VM_PRIV_KEY
+			"key_path": TunnelsController.VM_PRIV_KEY
 		})
 		if not run(tunnel_cmd):
 			log(ERROR, "TunnelsController.start_tunnel_controller_dmz: failed to start tunnel between controller and dmz")

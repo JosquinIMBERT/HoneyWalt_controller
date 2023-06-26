@@ -7,75 +7,86 @@ from common.utils.files import *
 from common.utils.logs import *
 from config import get_conf
 from door.global_controller import DoorGlobalController
-import glob
 from tools.cowrie import CowrieController
 from tools.traffic import TrafficController
 from tools.tunnels import TunnelsController
+
+from tools.honeypot import HoneypotManager
+from tools.state import StateManager
+from tools.vm import VMManager
+
 from vm.controller import VMController
 
+server = None
+
 def handle(signum, frame):
-	glob.SERVER.stop()
+	global server
+	if server is not None:
+		server.stop()
 
 class ControllerServer:
 	"""ControllerServer"""
 	def __init__(self):
 		log(INFO, "ControllerServer.__init__: creating the ControllerServer")
-		glob.init(
-			self,
-			get_conf(),
-			to_root_path("var/key/id_olim"),
-			to_root_path("var/key/id_olim.pub"),
-			to_root_path("var/key/id_door"),
-			to_root_path("var/key/id_door.pub")
-		)
-		self.DOORS_CONTROLLER = DoorGlobalController()
-		self.VM_CONTROLLER = VMController()
-		self.CLIENT_CONTROLLER = ClientController()
-		self.COWRIE_CONTROLLER = CowrieController()
-		self.TUNNELS_CONTROLLER = TunnelsController()
-		self.TRAFFIC_CONTROLLER = TrafficController()
+		
+		self.doors    = DoorGlobalController(self)
+		self.vm       = VMController(self)
+		self.client   = ClientController(self)
+		self.cowrie   = CowrieController(self)
+		self.tunnels  = TunnelsController(self)
+		self.traffic  = TrafficController(self)
+		
+		self.honeypot_manager = HoneypotManager(self)
+		self.state_manager    = StateManager(self)
+		self.vm_manager       = VMManager(self)
+
+		self.edit_config = get_conf()
+		self.run_config  = {}
+
+		self.need_commit = False
+
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C
 
 	def start(self):
-		self.CLIENT_CONTROLLER.start()
+		self.client.start()
 
 	def stop(self):
-		try: self.CLIENT_CONTROLLER.stop()
+		try: self.client.stop()
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the client controller")
 			log(ERROR, "ControllerServer.stop:", err)
 		else:
 			log(INFO, "ControllerServer.stop: client controller successfully stopped")
 
-		try: self.VM_CONTROLLER.stop()
+		try: self.vm.stop()
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the vm controller")
 			log(ERROR, "ControllerServer.stop:", err)
 		else:
 			log(INFO, "ControllerServer.stop: vm controller successfully stopped")
 
-		try: self.COWRIE_CONTROLLER.stop()
+		try: self.cowrie.stop()
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the cowrie controller")
 			log(ERROR, "ControllerServer.stop:", err)
 		else:
 			log(INFO, "ControllerServer.stop: cowrie controller successfully stopped")
 
-		try: self.TUNNELS_CONTROLLER.stop()
+		try: self.tunnels.stop()
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the tunnels controller")
 			log(ERROR, "ControllerServer.stop:", err)
 		else:
 			log(INFO, "ControllerServer.stop: tunnels controller successfully stopped")
 
-		try: self.TRAFFIC_CONTROLLER.stop_control()
+		try: self.traffic.stop_control()
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the traffic controller")
 			log(ERROR, "ControllerServer.stop:", err)
 		else:
 			log(INFO, "ControllerServer.stop: traffic controller successfully stopped")
 
-		try: del self.DOORS_CONTROLLER
+		try: del self.doors
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the doors controller")
 			log(ERROR, "ControllerServer.stop:", err)
