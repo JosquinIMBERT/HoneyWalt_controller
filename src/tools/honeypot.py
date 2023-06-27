@@ -9,7 +9,7 @@ from common.utils.logs import *
 from common.utils.misc import *
 from common.utils.rpc import FakeClient
 
-def HoneypotManager:
+class HoneypotManager:
 	def __init__(self, server):
 		self.server = server
 
