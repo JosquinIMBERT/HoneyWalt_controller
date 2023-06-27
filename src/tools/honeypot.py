@@ -68,7 +68,7 @@ class HoneypotManager:
 		self.server.edit_config["honeypots"] += [new_honeypot]
 
 		cpt = 0
-		for honeypot in self.server.edit_config:
+		for honeypot in self.server.edit_config["honeypots"]:
 			honeypot["id"] = cpt
 			cpt += 1
 
