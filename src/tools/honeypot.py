@@ -27,7 +27,7 @@ class HoneypotManager:
 		if not regex.match(image):
 			client.log(ERROR, image+" is not a Walt image clonable link")
 			return None
-		image_short = extract_short_name(name)
+		image_short = extract_short_name(image)
 
 		# Checking device
 		if find(self.server.edit_config, device_name, ["device", "name"]) is not None:
@@ -96,7 +96,7 @@ class HoneypotManager:
 			if not regex.match(image):
 				client.log(ERROR, image+" is not a Walt image clonable link")
 			else:
-				image_short = extract_short_name(name)
+				image_short = extract_short_name(image)
 				honeypot["image"]["name"] = image
 				honeypot["image"]["short_name"] = image_short
 
