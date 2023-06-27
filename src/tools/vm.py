@@ -3,6 +3,7 @@ import os, re, sys, time
 
 # Internal
 from common.utils.logs import *
+from common.utils.rpc import FakeClient
 import common.utils.settings as settings
 
 class VMManager:
@@ -12,7 +13,7 @@ class VMManager:
 	def __del__(self):
 		pass
 
-	def shell(self, client):
+	def shell(self, client=FakeClient()):
 		if not self.server.vm.pid():
 			client.log(ERROR, "the VM seems to be stopped")
 			return None
@@ -25,7 +26,7 @@ class VMManager:
 				res["key"] = keyfile.read()
 			return res
 
-	def start(self, client, phase):
+	def start(self, phase, client=FakeClient()):
 		if self.server.vm.pid() is not None:
 			client.log(ERROR, "the VM is already running")
 			return None
@@ -33,7 +34,7 @@ class VMManager:
 
 		return True
 
-	def stop(self, client):
+	def stop(self, client=FakeClient()):
 		if self.server.vm.pid() is None:
 			client.log(ERROR, "the VM is already stopped")
 			return None

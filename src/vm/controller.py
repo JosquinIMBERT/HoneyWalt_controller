@@ -58,13 +58,13 @@ class VMController(Controller):
 			return None
 
 		# Schedule hard shutdown in case of fail of soft shutdown
-		timer = threading.Timer(10, self.hard_shutdown)
+		timer = threading.Timer(20, self.hard_shutdown)
 		timer.start()
 
 		# Trying soft shutdown (run shutdown command)
 		self.soft_shutdown()
 
-		time.sleep(3)
+		time.sleep(10)
 
 		# Cancel hard shutdown if soft shutdown was successful
 		if not self.pid():
@@ -173,7 +173,7 @@ class VMController(Controller):
 
 			# Trying to run "shutdown now" through ssh
 			run("ssh -o ConnectTimeout=3 root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
-		
+
 			# Giving 3 seconds for qemu process to shutdown with the VM
 			time.sleep(3)
 

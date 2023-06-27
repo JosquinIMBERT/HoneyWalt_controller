@@ -5,6 +5,7 @@ import os, sys, time
 from config import *
 from common.utils.logs import *
 from common.utils.misc import *
+from common.utils.rpc import FakeClient
 import common.utils.settings as settings
 
 
@@ -18,7 +19,7 @@ class StateManager:
 
 
 	# Start HoneyWalt
-	def start(self, client):
+	def start(self, client=FakeClient()):
 		#####################
 		#		CHECKS		#
 		#####################
@@ -138,7 +139,7 @@ class StateManager:
 
 	# Commit some persistent information on the VM so it is taken
 	# into acount on the next boot
-	def commit(self, client, regen=True, force=False):
+	def commit(self, regen=True, force=False, client=FakeClient()):
 		if self.server.vm.pid() is not None:
 			client.log(ERROR, "please stop HoneyWalt before to commit")
 			return None
@@ -208,7 +209,7 @@ class StateManager:
 
 
 
-	def stop(self, client):
+	def stop(self, client=FakeClient()):
 		# Tunnels and Cowrie
 		log(INFO, "stopping exposed ports tunnels")
 		self.server.tunnels.stop_expose_ports()
@@ -241,7 +242,7 @@ class StateManager:
 
 
 
-	def restart(self, client, regen=False):
+	def restart(self, regen=False, client=FakeClient()):
 		# Stop
 		res_stop = stop(client, None)
 		if not res_stop:
@@ -265,7 +266,7 @@ class StateManager:
 
 
 
-	def status(self, client):
+	def status(self, client=FakeClient()):
 		res = {}
 
 		# VM
