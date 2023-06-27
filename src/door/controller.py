@@ -88,14 +88,14 @@ class DoorController():
 		pubkey = self.honeypot["device"]["pubkey"]
 		return self.call(self.conn.root.wg_set_peer, pubkey)
 
-	def traffic_shaper_up(self):
-		res = self.call(self.conn.root.traffic_shaper_up)
+	def shaper_up(self):
+		res = self.call(self.conn.root.shaper_up)
 		self.shaper.start()
 		return res
 
-	def traffic_shaper_down(self):
+	def shaper_down(self):
 		self.shaper.stop()
-		return self.call(self.conn.root.traffic_shaper_down)
+		return self.call(self.conn.root.shaper_down)
 
 	def cowrie_start(self):
 		return self.call(self.conn.root.cowrie_start)

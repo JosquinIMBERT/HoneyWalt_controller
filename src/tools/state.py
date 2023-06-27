@@ -104,7 +104,7 @@ class StateManager:
 		log(INFO, "starting doors wireguard")
 		self.server.doors.wg_up()
 		log(INFO, "starting doors shaper")
-		self.server.doors.traffic_shaper_up()
+		self.server.doors.shaper_up()
 
 
 		#####################
@@ -215,7 +215,7 @@ class StateManager:
 		
 		# Traffic Shaper
 		log(INFO, "stopping traffic shapers")
-		self.server.doors.traffic_shaper_down()
+		self.server.doors.shaper_down()
 		
 		# Wireguard
 		log(INFO, "stopping wireguard")

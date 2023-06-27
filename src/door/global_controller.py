@@ -54,13 +54,13 @@ class DoorGlobalController:
 		for honeyid, controller in self.controllers.items():
 			controller.wg_set_peer()
 
-	def traffic_shaper_up(self):
+	def shaper_up(self):
 		for honeyid, controller in self.controllers.items():
-			controller.traffic_shaper_up()
+			controller.shaper_up()
 
-	def traffic_shaper_down(self):
+	def shaper_down(self):
 		for honeyid, controller in self.controllers.items():
-			controller.traffic_shaper_down()
+			controller.shaper_down()
 
 	def cowrie_start(self):
 		for honeyid, controller in self.controllers.items():
