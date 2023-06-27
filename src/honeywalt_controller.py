@@ -95,5 +95,5 @@ if __name__ == '__main__':
 
 	threading.current_thread().name = "MainThread"
 
-	controller_server = ControllerServer()
-	controller_server.start()
+	server = ControllerServer()
+	server.start()
