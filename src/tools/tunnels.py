@@ -3,11 +3,10 @@ from sshtunnel import SSHTunnelForwarder
 from string import Template
 import tempfile
 
-# Internal
+# Common
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.misc import *
-import common.utils.settings as settings
 from common.utils.system import *
 
 class TunnelsController:
@@ -16,6 +15,9 @@ class TunnelsController:
 	VM_PUB_KEY    = to_root_path("var/key/id_olim.pub")
 	DOOR_PRIV_KEY = to_root_path("var/key/id_door")
 	DOOR_PUB_KEY  = to_root_path("var/key/id_door.pub")
+	TUNNEL_PORTS  = 2000
+	EXPOSE_PORTS  = 7000
+	PORTS_LIMIT   = 10
 
 	def __init__(self, server):
 		log(INFO, "TunnelsController.__init__: creating the TunnelsController")
@@ -33,48 +35,65 @@ class TunnelsController:
 	#	 START TUNNELS	  #
 	#######################
 
-	def start_cowrie_dmz(self):
-		BACKEND_PORTS = settings.get("BACKEND_PORTS")
-
+	# Start tunnels for cowrie traffic
+	def start_ssh(self):
 		for honeypot in self.server.run_config["honeypots"]:
-			self.start_tunnel_controller_dmz(
-				to_root_path("run/ssh/cowrie-dmz/"),
-				BACKEND_PORTS+honeypot["id"],
-				honeypot["device"]["ip"],
-				22
+			# Tunnel controller -> device
+			self.start_tunnel(
+				socket_dir    = to_root_path("run/ssh/internal-ssh/"),
+				bind_addr     = "127.0.0.1",
+				bind_port     = TunnelsController.TUNNEL_PORTS+honeypot["id"],
+				dst_addr      = honeypot["device"]["ip"],
+				dst_port      = 22,
+				remote_ip     = "10.0.0.2",
+				key_path      = TunnelsController.VM_PRIV_KEY,
+				remote_origin = False
+			)
+			# Tunnel door -> controller
+			self.start_tunnel(
+				socket_dir    = to_root_path("run/ssh/external-ssh/"),
+				bind_addr     = "127.0.0.1",
+				bind_port     = TunnelsController.TUNNEL_PORTS,
+				dst_addr      = "127.0.0.1",
+				dst_port      = TunnelsController.TUNNEL_PORTS+honeypot["id"],
+				remote_ip     = honeypot["door"]["host"],
+				key_path      = TunnelsController.DOOR_PRIV_KEY,
+				remote_origin = True
 			)
 
-	def start_door_cowrie(self):
-		LISTEN_PORTS = settings.get("LISTEN_PORTS")
-
+	# Start tunnels for other exposed ports
+	def start_other(self):
 		for honeypot in self.server.run_config["honeypots"]:
-			self.start_tunnel_door_controller(
-				to_root_path("run/ssh/cowrie-out/"),
-				22,
-				LISTEN_PORTS+honeypot["id"],
-				honeypot["door"]["host"]
-			)
-
-	# For additional ports (not ssh)
-	def start_expose_ports(self):
-		EXPOSE_PORTS = settings.get("EXPOSE_PORTS")
-
-		for honeypot in self.server.run_config["honeypots"]:
+			if len(honeypot["ports"]) > TunnelsController.PORTS_LIMIT:
+				log(ERROR, "We only accept "+str(TunnelsController.PORTS_LIMIT)
+					+" exposed ports per honeypot - honeypot "+honeypot["id"]
+					+"does not meet this requirement")
+				continue
+			cpt = 0
 			for port in honeypot["ports"]:
 				# Controller --> Device
-				self.start_tunnel_controller_dmz(
-					to_root_path("run/ssh/expose-dmz/"),
-					EXPOSE_PORTS+honeypot["id"],
-					honeypot["device"]["ip"],
-					port
+				self.start_tunnel(
+					socket_dir    = to_root_path("run/ssh/internal-others/"),
+					bind_addr     = "127.0.0.1",
+					bind_port     = TunnelsController.EXPOSE_PORTS+(honeypot["id"]*TunnelsController.PORTS_LIMIT)+cpt,
+					dst_addr      = honeypot["device"]["ip"],
+					dst_port      = port,
+					remote_ip     = "10.0.0.2",
+					key_path      = TunnelsController.VM_PRIV_KEY,
+					remote_origin = False
 				)
 				# Door --> Controller
-				self.start_tunnel_door_controller(
-					to_root_path("run/ssh/expose-out/"),
-					port,
-					EXPOSE_PORTS+honeypot["id"],
-					honeypot["door"]["host"]
+				self.start_tunnel(
+					socket_dir    = to_root_path("run/ssh/external-others/"),
+					bind_addr     = "0.0.0.0",
+					bind_port     = port,
+					dst_addr      = "127.0.0.1",
+					dst_port      = TunnelsController.EXPOSE_PORTS+(honeypot["id"]*TunnelsController.PORTS_LIMIT)+cpt,
+					remote_ip     = honeypot["door"]["host"],
+					key_path      = TunnelsController.DOOR_PRIV_KEY,
+					remote_origin = True
 				)
+				cpt += 1
 
 
 	#######################
@@ -82,20 +101,17 @@ class TunnelsController:
 	#######################
 
 	# For additional ports (not ssh)
-	def stop_expose_ports(self):
-		for directory in ["expose-out", "expose-dmz"]:
-			self.stop_tunnels(directory)
+	def stop_other(self):
+		self.stop_tunnels("external-others")
+		self.stop_tunnels("internal-others")
 
-	def stop_cowrie_tunnels_out(self):
-		self.stop_tunnels("cowrie-out")
-
-	def stop_cowrie_tunnels_dmz(self):
-		self.stop_tunnels("cowrie-dmz")
+	def stop_ssh(self):
+		self.stop_tunnels("external-ssh")
+		self.stop_tunnels("internal-ssh")
 
 	def stop(self):
-		self.stop_expose_ports()
-		self.stop_cowrie_tunnels_out()
-		self.stop_cowrie_tunnels_dmz()
+		self.stop_other()
+		self.stop_ssh()
 
 
 	#######################
@@ -105,7 +121,7 @@ class TunnelsController:
 	def gen_sock_filename(self, socketdir):
 		# Warning: using a __deprecated__ function
 		# May need to be changed, but I think the ssh
-		# command expects that the file doesn't exist
+		# command expects that the file does not exist
 		socketfile = tempfile.mktemp(".sock", "", dir=socketdir)
 		try:
 			os.remove(socketfile)
@@ -113,44 +129,28 @@ class TunnelsController:
 			pass
 		return socketfile
 
-	def start_tunnel_door_controller(self, socketdir, door_port, local_port, door):
-		# TODO: use sshtunnels library
-		toDoor_template = Template("ssh -f -N -M -S ${socket} \
-			-R *:${door_port}:127.0.0.1:${local_port} \
-			-i ${key_path} \
-			root@${host} \
-			-p ${realssh_port}")
+	def start_tunnel(self, socket_dir, bind_addr, bind_port, dst_addr, dst_port, remote_ip, key_path, remote_origin=True):
+		origin = "-R" if remote_origin else "-L"
+		socket = self.gen_sock_filename(socketdir)
 
-		tunnel_cmd = toDoor_template.substitute({
-			"socket": self.gen_sock_filename(socketdir),
-			"door_port": door_port,
-			"local_port": local_port,
-			"key_path": TunnelsController.DOOR_PRIV_KEY,
-			"host": door["host"],
-			"realssh_port": door["realssh"]
-		})
-		if not run(tunnel_cmd):
-			log(ERROR, "TunnelsController.start_tunnel_door_controller: failed to start tunnel between door and controller")
-
-	def start_tunnel_controller_dmz(self, socketdir, local_port, dev_ip, dev_port):
-		# TODO: use sshtunnels library
-		VM_IP = settings.get("VM_IP")
-
-		toDMZ_template = Template("ssh -f -N -M -S ${socket} \
-			-L ${local_port}:${ip}:${dev_port} \
-			root@${vm_ip} \
+		tunnel_template = Template("ssh -f -N -M -S ${socket} \
+			${origin} ${bind_addr}:${bind_port}:${dst_addr}:${dst_port} \
+			root@${remote_ip} \
 			-i ${key_path}")
 
-		tunnel_cmd = toDMZ_template.substitute({
-			"socket": self.gen_sock_filename(socketdir),
-			"local_port": local_port,
-			"ip": dev_ip,
-			"dev_port": dev_port,
-			"vm_ip": VM_IP,
-			"key_path": TunnelsController.VM_PRIV_KEY
+		tunnel_command = tunnel_template.substitute({
+			"socket"    : socket,
+			"origin"    : origin,
+			"bind_addr" : bind_addr,
+			"bind_port" : bind_port,
+			"dst_addr"  : dst_addr,
+			"dst_port"  : dst_port,
+			"remote_ip" : remote_ip,
+			"key_path"  : key_path
 		})
-		if not run(tunnel_cmd):
-			log(ERROR, "TunnelsController.start_tunnel_controller_dmz: failed to start tunnel between controller and dmz")
+
+		if not run(tunnel_command):
+			log(ERROR, "failed to create a tunnel")
 
 
 	#######################

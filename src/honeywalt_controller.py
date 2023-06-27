@@ -7,7 +7,6 @@ from common.utils.files import *
 from common.utils.logs import *
 from config import get_conf
 from door.global_controller import DoorGlobalController
-from tools.cowrie import CowrieController
 from tools.traffic import TrafficController
 from tools.tunnels import TunnelsController
 
@@ -32,7 +31,6 @@ class ControllerServer:
 		self.doors    = DoorGlobalController(self)
 		self.vm       = VMController(self)
 		self.client   = ClientController(self)
-		self.cowrie   = CowrieController(self)
 		self.tunnels  = TunnelsController(self)
 		self.traffic  = TrafficController(self)
 		
@@ -64,13 +62,6 @@ class ControllerServer:
 			log(ERROR, "ControllerServer.stop:", err)
 		else:
 			log(INFO, "ControllerServer.stop: vm controller successfully stopped")
-
-		try: self.cowrie.stop()
-		except Exception as err:
-			log(ERROR, "ControllerServer.stop: failed to stop the cowrie controller")
-			log(ERROR, "ControllerServer.stop:", err)
-		else:
-			log(INFO, "ControllerServer.stop: cowrie controller successfully stopped")
 
 		try: self.tunnels.stop()
 		except Exception as err:

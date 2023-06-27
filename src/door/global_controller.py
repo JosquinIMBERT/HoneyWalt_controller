@@ -74,6 +74,12 @@ class DoorGlobalController:
 		for honeyid, controller in self.controllers.items():
 			controller.cowrie_configure()
 
+	def cowrie_running(self):
+		cpt = 0
+		for honeyid, controller in self.controllers.items():
+			if controller.cowrie_is_running(): cpt += 1
+		return cpt
+
 	def commit(self):
 		for honeyid, controller in self.controllers.items():
 			controller.commit()

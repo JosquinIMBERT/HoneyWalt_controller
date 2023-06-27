@@ -49,7 +49,6 @@ class StateManager:
 		#####################
 
 		self.server.tunnels.init_run()
-		self.server.cowrie.init_run()
 
 
 		#####################
@@ -75,16 +74,12 @@ class StateManager:
 
 
 		#####################
-		#	 START COWRIE	#
+		# START SSH TUNNELS #
 		#####################
 		
-		# Start tunnels between cowrie and devices
-		log(INFO, "starting tunnels between cowrie and Walt nodes")
-		self.server.tunnels.start_cowrie_dmz()
-
-		# Start cowrie
-		log(INFO, "starting cowrie")
-		self.server.doors.cowrie_start()
+		# Start SSH tunnels for cowrie traffic
+		log(INFO, "starting tunnels for attackers connections")
+		self.server.tunnels.start_ssh()
 
 
 		#####################
@@ -125,13 +120,13 @@ class StateManager:
 		#		EXPOSE		#
 		#####################
 
-		# Start tunnels between cowrie and doors
-		log(INFO, "starting tunnels between doors and cowrie")
-		self.server.tunnels.start_door_cowrie()
+		# Start cowrie
+		log(INFO, "starting cowrie")
+		self.server.doors.cowrie_start()
 
 		# Start to expose other ports
 		log(INFO, "starting exposed ports tunnels")
-		self.server.tunnels.start_expose_ports()
+		self.server.tunnels.start_other()
 
 		return True
 
@@ -211,17 +206,15 @@ class StateManager:
 
 	def stop(self, client=FakeClient()):
 		# Tunnels and Cowrie
-		log(INFO, "stopping exposed ports tunnels")
-		self.server.tunnels.stop_expose_ports()
-		log(INFO, "stopping cowrie tunnels to doors")
-		self.server.tunnels.stop_cowrie_tunnels_out()
+		log(INFO, "stopping tunnels for other exposed ports")
+		self.server.tunnels.stop_other()
 		log(INFO, "stopping cowrie")
-		self.server.cowrie.stop()
-		log(INFO, "stopping cowrie tunnels to dmz")
-		self.server.tunnels.stop_cowrie_tunnels_dmz()
+		self.server.doors.cowrie_stop()
+		log(INFO, "stopping tunnels for attackers connections")
+		self.server.tunnels.stop_ssh()
 		
 		# Traffic Shaper
-		log(INFO, "stopping traffic shaper on doors side")
+		log(INFO, "stopping traffic shapers")
 		self.server.doors.traffic_shaper_down()
 		
 		# Wireguard
@@ -276,10 +269,9 @@ class StateManager:
 			res["vm_pid"] = vm_pid
 		
 		# Cowrie
-		res["cowrie_instances"] = self.server.cowrie.running_cowries()
+		res["cowrie_instances"] = self.server.doors.cowrie_running()
 		
 		# Configuration
-		res["nb_devs"] = len(self.server.edit_config["device"])
-		res["nb_doors"] = len(self.server.edit_config["door"])
+		res["nb_honeypots"] = len(self.server.edit_config["honeypots"])
 
 		return res
