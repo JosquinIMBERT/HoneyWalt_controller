@@ -11,8 +11,8 @@ import common.utils.settings as settings
 
 class TrafficController:
 
-	LATENCY = 
-	THROUGHPUT = 
+	LATENCY = "50usec"
+	THROUGHPUT = "10mbit"
 
 	def __init__(self, server):
 		log(INFO, "TrafficController.__init__: creating the TrafficController")
