@@ -1,10 +1,9 @@
 {
-    "need_commit": "Empty",
-    "door": [],
-    "controller": {
-        "throughput": "10mbit",
-        "latency": "50usec"
-    },
-    "device": [],
-    "image": []
+    "honeypots": [],
+    "hpfeeds": {
+        "server": "2.2.2.2",
+        "port": 2222,
+        "identifier": "null",
+        "secret": "null"
+    }
 }
