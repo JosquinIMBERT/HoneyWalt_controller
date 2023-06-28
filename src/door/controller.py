@@ -129,10 +129,10 @@ class DoorController():
 				}
 			},
 			"hpfeeds": {
-				"server": self.server.run_config["hpfeeds"]["server"],
-				"port": self.server.run_config["hpfeeds"]["port"],
-				"identifier": self.server.run_config["hpfeeds"]["identifier"],
-				"secret": self.server.run_config["hpfeeds"]["secret"]
+				"server": self.server.edit_config["hpfeeds"]["server"],
+				"port": self.server.edit_config["hpfeeds"]["port"],
+				"identifier": self.server.edit_config["hpfeeds"]["identifier"],
+				"secret": self.server.edit_config["hpfeeds"]["secret"]
 			}
 		}
 		return self.call(self.conn.root.set_config, json.dumps(config))
