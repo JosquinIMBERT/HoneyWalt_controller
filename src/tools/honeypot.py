@@ -47,6 +47,13 @@ class HoneypotManager:
 			client.log(INFO, "No password was given. Using password: "+username)
 			password = username
 
+		# Processing ports
+		try:
+			ports_list = [] if ports is None else [int(port) for port in ports.split(",")]
+		except:
+			client.log(ERROR, "received invalid ports list - using empty list instead")
+			ports_list = list()
+
 		new_honeypot = {
 			"id": 0, # We will set the honetid right after
 			"door": {"host": door},
@@ -62,7 +69,7 @@ class HoneypotManager:
 				"user": username,
 				"pass": password
 			},
-			"ports": [] if ports is None else ports
+			"ports": ports_list
 		}
 
 		self.server.edit_config["honeypots"] += [new_honeypot]
@@ -74,7 +81,7 @@ class HoneypotManager:
 
 		self.server.need_commit = True
 
-		return cpt
+		return cpt-1
 
 
 
@@ -130,7 +137,13 @@ class HoneypotManager:
 		if password is not None: honeypot["credentials"]["pass"] = password
 
 		# Ports
-		if ports is not None: honeypot["ports"] = ports
+		if ports is not None:
+			try:
+				ports_list = [int(port) for port in options.ports[0].split(",")]
+			except:
+				client.log(ERROR, "received invalid ports list - not changing ports")
+			else:
+				honeypot["ports"] = ports_list
 
 		self.server.need_commit = True
 
@@ -148,4 +161,16 @@ class HoneypotManager:
 
 
 	def show(self, client=FakeClient()):
-		return self.server.edit_config["honeypots"]
+		ret = []
+		for honeypot in self.server.edit_config["honeypots"]:
+			ret += [{
+				"id"          : honeypot["id"],
+				"door"        : honeypot["door"]["host"],
+				"device_name" : honeypot["device"]["name"],
+				"device_mac"  : honeypot["device"]["mac"],
+				"image"       : honeypot["image"]["name"],
+				"user"        : honeypot["credentials"]["user"],
+				"pass"        : honeypot["credentials"]["pass"],
+				"ports"       : honeypot["ports"]
+			}]
+		return ret
