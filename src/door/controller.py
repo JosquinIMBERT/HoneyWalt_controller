@@ -49,7 +49,7 @@ class DoorController():
 		)
 		self.conn.root.set_stdout(sys.stdout)
 		self.conn.root.set_stderr(sys.stderr)
-		self.conn.root.set_log_level(LOG_LEVEL)
+		self.conn.root.set_log_level(get_log_level())
 		self.background_service = rpyc.BgServingThread(self.conn)
 
 		# Sending initial configuration to the door
