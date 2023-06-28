@@ -40,11 +40,11 @@ class HoneypotManager:
 
 		# Processing username and password
 		if username is None:
-			log(INFO, "No username was given. Using username: root, password: root")
+			client.log(INFO, "No username was given. Using username: root, password: root")
 			username = "root"
 			password = "root"
 		elif password is None:
-			log(INFO, "No password was given. Using password: "+username)
+			client.log(INFO, "No password was given. Using password: "+username)
 			password = username
 
 		new_honeypot = {
