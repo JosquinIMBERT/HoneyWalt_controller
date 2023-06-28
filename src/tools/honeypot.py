@@ -49,7 +49,7 @@ class HoneypotManager:
 
 		# Processing ports
 		try:
-			ports_list = [] if ports is None else [int(port) for port in ports.split(",")]
+			ports_list = [] if ports is None or ports == "" else [int(port) for port in ports.split(",")]
 		except:
 			client.log(ERROR, "received invalid ports list - using empty list instead")
 			ports_list = list()
@@ -137,7 +137,7 @@ class HoneypotManager:
 		if password is not None: honeypot["credentials"]["pass"] = password
 
 		# Ports
-		if ports is not None:
+		if ports is not None and ports != "":
 			try:
 				ports_list = [int(port) for port in options.ports[0].split(",")]
 			except:
