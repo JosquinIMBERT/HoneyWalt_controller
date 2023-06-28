@@ -2,7 +2,6 @@
 import json, os, rpyc, sys
 
 # Internal
-from common.door.proto import *
 from common.utils.controller import Controller
 from common.utils.files import *
 from common.utils.logs import *
@@ -25,6 +24,9 @@ class ControllerService(IPService):
 		self.local_shaper.forward(packet)
 
 class DoorController():
+
+	DOOR_PORT = 5556
+
 	def __init__(self, server, honeypot, timeout=10):
 		# Honeypot information
 		self.honeyid = honeypot["id"]
@@ -40,7 +42,7 @@ class DoorController():
 		# RPyC connection to the door
 		self.conn = rpyc.ssl_connect(
 			self.honeypot["door"]["host"],
-			port=DOOR_PORT,
+			port=DoorController.DOOR_PORT,
 			config={"allow_public_attrs": True, "sync_request_timeout": self.timeout, "local_shaper": self.shaper},
 			keyfile=to_root_path("var/key/pki/private/controller-client.key"),
 			certfile=to_root_path("var/key/pki/controller-client.crt"),

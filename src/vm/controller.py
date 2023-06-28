@@ -118,47 +118,34 @@ class VMController(Controller):
 	# COMMUNICATION WITH THE VM #
 	#############################
 
-	# CMD_VM_LIVE
 	def connected(self):
 		if self.socket.connected():
 			return self.exchange(commands=[CMD_VM_LIVE])
 		else:
 			return False
 
-	# CMD_VM_PHASE
 	def send_phase(self, phase=None):
 		phase = self.phase if phase is None else phase
 		return self.exchange(commands=[CMD_VM_PHASE], data=phase)
 
-	# CMD_VM_WALT_DEVS
-	def send_devices(self, devs):
-		return self.exchange(commands=[CMD_VM_WALT_DEVS], data=devs)
+	def send_honeypots(self, honeypots):
+		return self.exchange(commands=[CMD_VM_HONEYPOTS], data=honeypots)
 
-	# CMD_VM_WALT_IPS
 	def get_ips(self):
-		return self.exchange(commands=[CMD_VM_WALT_IPS])
+		return self.exchange(commands=[CMD_VM_IPS])
 
-	# CMD_VM_WG_KEYGEN
 	def wg_keygen(self):
 		return self.exchange(commands=[CMD_VM_WG_KEYGEN])
 
-	# CMD_VM_WG_DOORS
-	def send_doors(self, doors):
-		return self.exchange(commands=[CMD_VM_WG_DOORS], data=doors)
-
-	# CMD_VM_WG_UP
 	def wg_up(self):
 		return self.exchange(commands=[CMD_VM_WG_UP])
 
-	# CMD_VM_WG_DOWN
 	def wg_down(self):
 		return self.exchange(commands=[CMD_VM_WG_DOWN])
 
-	# CMD_VM_COMMIT
 	def commit(self):
 		return self.exchange(commands=[CMD_VM_COMMIT])
 
-	# CMD_VM_SHUTDOWN
 	def soft_shutdown(self):
 		log(INFO, "starting vm soft shutdown")
 		return self.exchange(commands=[CMD_VM_SHUTDOWN], timeout=10)

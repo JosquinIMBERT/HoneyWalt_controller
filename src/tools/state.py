@@ -1,5 +1,5 @@
 # External
-import os, sys, time
+import json, os, sys, time
 
 # Internal
 from config import *
@@ -160,28 +160,31 @@ class StateManager:
 		doors = []
 		devices = []
 		for honeypot in self.server.edit_config["honeypots"]:
-			doors += [{
-				"id"     : honeypot["id"],
-				"pubkey" : honeypot["door"]["pubkey"]
-			}]
-			devices += [{
-				"id"          : honeypot["id"],
-				"name"        : honeypot["device"]["name"],
-				"mac"         : honeypot["device"]["mac"],
-				"image"       : honeypot["image"]["name"],
-				"short_image" : honeypot["image"]["short_name"],
-				"username"    : honeypot["credentials"]["user"],
-				"password"    : honeypot["credentials"]["pass"]
+			honeypots += [{
+				"id" : honeypot["id"],
+				"door" : {
+					"pubkey" : honeypot["door"]["pubkey"]
+				},
+				"device" : {
+					"name" : honeypot["device"]["name"],
+					"mac"  : honeypot["device"]["mac"]
+				},
+				"image" : {
+					"name"       : honeypot["image"]["name"],
+					"short_name" : honeypot["image"]["short_name"]
+				},
+				"credentials" : {
+					"username" : honeypot["credentials"]["username"],
+					"password" : honeypot["credentials"]["password"],
+				}
 			}]
 
 		log(INFO, "starting VM")
 		self.server.vm.start(1)
 		log(INFO, "sending phase to VM")
 		self.server.vm.send_phase()
-		log(INFO, "sending devices to VM")
-		self.server.vm.send_devices(devices)
-		log(INFO, "sending doors to VM")
-		self.server.vm.send_doors(doors)
+		log(INFO, "sending honeypots to VM")
+		self.server.vm.send_honeypots(json.dumps(honeypots))
 		log(INFO, "generating VM wireguard keys")
 		vm_keys = self.server.vm.wg_keygen()
 		log(INFO, "commit on VM")
