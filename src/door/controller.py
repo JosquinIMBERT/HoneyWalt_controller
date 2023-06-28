@@ -135,7 +135,7 @@ class DoorController():
 				"secret": self.server.run_config["hpfeeds"]["secret"]
 			}
 		}
-		return self.call(self.conn.root.set_config, config)
+		return self.call(self.conn.root.set_config, json.dumps(config))
 
 	def commit(self):
 		return self.call(self.conn.root.commit)
