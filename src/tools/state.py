@@ -165,12 +165,13 @@ class StateManager:
 				"pubkey" : honeypot["door"]["pubkey"]
 			}]
 			devices += [{
-				"id"       : honeypot["id"],
-				"name"     : honeypot["device"]["name"],
-				"mac"      : honeypot["device"]["mac"],
-				"image"    : honeypot["image"]["name"],
-				"username" : honeypot["credentials"]["user"],
-				"password" : honeypot["credentials"]["pass"]
+				"id"          : honeypot["id"],
+				"name"        : honeypot["device"]["name"],
+				"mac"         : honeypot["device"]["mac"],
+				"image"       : honeypot["image"]["name"],
+				"short_image" : honeypot["image"]["short_name"],
+				"username"    : honeypot["credentials"]["user"],
+				"password"    : honeypot["credentials"]["pass"]
 			}]
 
 		log(INFO, "starting VM")
