@@ -89,6 +89,11 @@ class HoneypotManager:
 		device_mac=None, image=None, username=None,
 		password=None, ports=None, client=FakeClient()):
 
+		try: ident = int(ident)
+		except:
+			client.log(ERROR, "received invalid honeypot id")
+			return None
+
 		honeypot = find(self.server.edit_config["honeypots"], ident, "id")
 		if honeypot is None:
 			client.log(ERROR, "the selected honeypot was not found")
@@ -150,6 +155,11 @@ class HoneypotManager:
 
 
 	def delete(self, ident, client=FakeClient()):
+		try: ident = int(ident)
+		except:
+			client.log(ERROR, "received invalid honeypot id")
+			return None
+
 		if len(self.server.edit_config["honeypots"]) <= ident:
 			client.log(ERROR, "invalid honeypoy identifier")
 			return None
