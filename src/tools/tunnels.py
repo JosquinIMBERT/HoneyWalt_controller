@@ -27,8 +27,10 @@ class TunnelsController:
 		pass
 
 	def init_run(self):
-		delete(to_root_path("run/ssh/cowrie-dmz"), suffix=".pid")
-		delete(to_root_path("run/ssh/cowrie-out"), suffix=".pid")
+		delete(to_root_path("run/ssh/external-others"), suffix=".pid")
+		delete(to_root_path("run/ssh/internal-others"), suffix=".pid")
+		delete(to_root_path("run/ssh/external-ssh"), suffix=".pid")
+		delete(to_root_path("run/ssh/internal-ssh"), suffix=".pid")
 
 
 	#######################

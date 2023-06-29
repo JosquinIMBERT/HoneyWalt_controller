@@ -1,5 +1,5 @@
 *
-!cowrie-dmz
-!cowrie-out
-!expose-dmz
-!expose-out
+!external-others
+!external-ssh
+!internal-others
+!internal-ssh
