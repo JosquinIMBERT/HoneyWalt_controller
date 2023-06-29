@@ -120,11 +120,11 @@ class TunnelsController:
 	#   START UTILITIES   #
 	#######################
 
-	def gen_sock_filename(self, socketdir):
+	def gen_sock_filename(self, socket_dir):
 		# Warning: using a __deprecated__ function
 		# May need to be changed, but I think the ssh
 		# command expects that the file does not exist
-		socketfile = tempfile.mktemp(".sock", "", dir=socketdir)
+		socketfile = tempfile.mktemp(".sock", "", dir=socket_dir)
 		try:
 			os.remove(socketfile)
 		except OSError:
@@ -133,7 +133,7 @@ class TunnelsController:
 
 	def start_tunnel(self, socket_dir, bind_addr, bind_port, dst_addr, dst_port, remote_ip, key_path, remote_origin=True):
 		origin = "-R" if remote_origin else "-L"
-		socket = self.gen_sock_filename(socketdir)
+		socket = self.gen_sock_filename(socket_dir)
 
 		tunnel_template = Template("ssh -f -N -M -S ${socket} \
 			${origin} ${bind_addr}:${bind_port}:${dst_addr}:${dst_port} \
