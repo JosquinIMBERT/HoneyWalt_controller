@@ -129,7 +129,7 @@ class VMController(Controller):
 		return self.exchange(commands=[CMD_VM_PHASE], data=phase)
 
 	def send_honeypots(self, honeypots):
-		return self.exchange(commands=[CMD_VM_HONEYPOTS], data=honeypots)
+		return self.exchange(commands=[CMD_VM_HONEYPOTS], data=honeypots, timeout=600) # We wait 10min
 
 	def get_ips(self):
 		return self.exchange(commands=[CMD_VM_IPS])

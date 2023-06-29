@@ -186,14 +186,19 @@ class StateManager:
 		self.server.vm.send_honeypots(json.dumps(honeypots))
 		log(INFO, "generating VM wireguard keys")
 		vm_keys = self.server.vm.wg_keygen()
-		log(INFO, "commit on VM")
-		self.server.vm.commit()
 
 		# Adding wireguard public keys to devices in config
-		for data in vm_keys: #<id,pubkey>
-			if data["id"] < len(self.server.edit_config["honeypots"]):
-				self.server.edit_config["honeypots"][data["id"]]["device"]["pubkey"] = data["pubkey"]
+		if vm_keys and len(vm_keys)==len(self.server.edit_config["honeypots"]):
+			for data in vm_keys: #<id,pubkey>
+				if data["id"] < len(self.server.edit_config["honeypots"]):
+					self.server.edit_config["honeypots"][data["id"]]["device"]["pubkey"] = data["pubkey"]
+		else:
+			log(ERROR, "the VM did not send any wireguard keys")
+			return False
 
+		log(INFO, "commit on VM")
+		self.server.vm.commit()
+		log(INFO, "commit on doors")
 		self.server.doors.commit()
 
 		log(INFO, "updating local configuration file")
