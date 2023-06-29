@@ -173,8 +173,8 @@ class StateManager:
 					"short_name" : honeypot["image"]["short_name"]
 				},
 				"credentials" : {
-					"username" : honeypot["credentials"]["username"],
-					"password" : honeypot["credentials"]["password"],
+					"user" : honeypot["credentials"]["user"],
+					"pass" : honeypot["credentials"]["pass"],
 				}
 			}]
 
