@@ -73,8 +73,7 @@ class DoorController():
 
 	def wg_keygen(self):
 		res = self.call(self.conn.root.wg_keygen)
-		self.honeypot["door"]["pubkey"] = res["pubkey"]
-		self.honeypot["door"]["privkey"] = res["privkey"]
+		self.honeypot["door"]["pubkey"] = res
 		return res
 
 	def wg_up(self):
