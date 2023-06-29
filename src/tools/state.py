@@ -157,8 +157,7 @@ class StateManager:
 		self.server.doors.wg_keygen()
 
 		# Format door and device data for VM
-		doors = []
-		devices = []
+		honeypots = []
 		for honeypot in self.server.edit_config["honeypots"]:
 			honeypots += [{
 				"id" : honeypot["id"],
