@@ -18,6 +18,7 @@ class TunnelsController:
 	TUNNEL_PORTS  = 2000
 	EXPOSE_PORTS  = 7000
 	PORTS_LIMIT   = 10
+	REAL_SSH      = 1312
 
 	def __init__(self, server):
 		log(INFO, "TunnelsController.__init__: creating the TunnelsController")
@@ -60,6 +61,7 @@ class TunnelsController:
 				dst_port      = TunnelsController.TUNNEL_PORTS+int(honeypot["id"]),
 				remote_ip     = honeypot["door"]["host"],
 				key_path      = TunnelsController.DOOR_PRIV_KEY,
+				real_ssh      = TunnelsController.REAL_SSH,
 				remote_origin = True
 			)
 
@@ -93,6 +95,7 @@ class TunnelsController:
 					dst_port      = TunnelsController.EXPOSE_PORTS+(int(honeypot["id"])*TunnelsController.PORTS_LIMIT)+cpt,
 					remote_ip     = honeypot["door"]["host"],
 					key_path      = TunnelsController.DOOR_PRIV_KEY,
+					real_ssh      = TunnelsController.REAL_SSH,
 					remote_origin = True
 				)
 				cpt += 1
@@ -131,13 +134,14 @@ class TunnelsController:
 			pass
 		return socketfile
 
-	def start_tunnel(self, socket_dir, bind_addr, bind_port, dst_addr, dst_port, remote_ip, key_path, remote_origin=True):
+	def start_tunnel(self, socket_dir, bind_addr, bind_port, dst_addr, dst_port, remote_ip, key_path, real_ssh=22, remote_origin=True):
 		origin = "-R" if remote_origin else "-L"
 		socket = self.gen_sock_filename(socket_dir)
 
 		tunnel_template = Template("ssh -f -N -M -S ${socket} \
 			${origin} ${bind_addr}:${bind_port}:${dst_addr}:${dst_port} \
 			root@${remote_ip} \
+			-p ${real_ssh} \
 			-i ${key_path}")
 
 		tunnel_command = tunnel_template.substitute({
@@ -148,6 +152,7 @@ class TunnelsController:
 			"dst_addr"  : dst_addr,
 			"dst_port"  : dst_port,
 			"remote_ip" : remote_ip,
+			"real_ssh"  : real_ssh,
 			"key_path"  : key_path
 		})
 
