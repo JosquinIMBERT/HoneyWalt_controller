@@ -18,13 +18,15 @@ class DoorGlobalController:
 		for honeyid, controller in self.controllers.items():
 			del controller
 
-	def reload(self, config):
+	def reload(self, config, set_config=False):
 		log(INFO, "DoorGlobalController.reload: reloading the DoorGlobalController")
 		for honeyid, controller in self.controllers.items():
 			del controller
 		self.controllers = {}
 		for honeypot in config["honeypots"]:
 			self.controllers[str(honeypot["id"])] = DoorController(self.server, honeypot)
+			if set_config:
+				self.controllers[str(honeypot["id"])].set_config()
 
 	def firewall_up(self):
 		for honeyid, controller in self.controllers.items():

@@ -54,9 +54,6 @@ class DoorController():
 		self.conn.root.set_log_level(get_log_level())
 		self.background_service = rpyc.BgServingThread(self.conn)
 
-		# Sending initial configuration to the door
-		self.set_config()
-
 	def __del__(self):
 		self.background_service.stop()
 		del self.timeout

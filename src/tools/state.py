@@ -147,7 +147,7 @@ class StateManager:
 			return None
 
 		log(INFO, "reloading doors controller")
-		self.server.doors.reload(self.server.edit_config)
+		self.server.doors.reload(self.server.edit_config, set_config=True)
 
 		if regen:
 			log(INFO, "generating cowrie configurations")
