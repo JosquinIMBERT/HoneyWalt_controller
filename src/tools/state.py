@@ -70,7 +70,7 @@ class StateManager:
 		for ip in ips:
 			ident = ip["id"]
 			if ident < len(self.server.run_config["honeypots"]):
-				self.server.run_config["honeypots"][ident] = ip["ip"]
+				self.server.run_config["honeypots"][ident]["device"]["ip"] = ip["ip"]
 
 
 		#####################
