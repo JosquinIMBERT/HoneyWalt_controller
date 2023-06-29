@@ -44,7 +44,7 @@ class TunnelsController:
 			self.start_tunnel(
 				socket_dir    = to_root_path("run/ssh/internal-ssh/"),
 				bind_addr     = "127.0.0.1",
-				bind_port     = TunnelsController.TUNNEL_PORTS+honeypot["id"],
+				bind_port     = TunnelsController.TUNNEL_PORTS+int(honeypot["id"]),
 				dst_addr      = honeypot["device"]["ip"],
 				dst_port      = 22,
 				remote_ip     = "10.0.0.2",
@@ -57,7 +57,7 @@ class TunnelsController:
 				bind_addr     = "127.0.0.1",
 				bind_port     = TunnelsController.TUNNEL_PORTS,
 				dst_addr      = "127.0.0.1",
-				dst_port      = TunnelsController.TUNNEL_PORTS+honeypot["id"],
+				dst_port      = TunnelsController.TUNNEL_PORTS+int(honeypot["id"]),
 				remote_ip     = honeypot["door"]["host"],
 				key_path      = TunnelsController.DOOR_PRIV_KEY,
 				remote_origin = True
@@ -68,7 +68,7 @@ class TunnelsController:
 		for honeypot in self.server.run_config["honeypots"]:
 			if len(honeypot["ports"]) > TunnelsController.PORTS_LIMIT:
 				log(ERROR, "We only accept "+str(TunnelsController.PORTS_LIMIT)
-					+" exposed ports per honeypot - honeypot "+honeypot["id"]
+					+" exposed ports per honeypot - honeypot "+str(honeypot["id"])
 					+"does not meet this requirement")
 				continue
 			cpt = 0
@@ -77,7 +77,7 @@ class TunnelsController:
 				self.start_tunnel(
 					socket_dir    = to_root_path("run/ssh/internal-others/"),
 					bind_addr     = "127.0.0.1",
-					bind_port     = TunnelsController.EXPOSE_PORTS+(honeypot["id"]*TunnelsController.PORTS_LIMIT)+cpt,
+					bind_port     = TunnelsController.EXPOSE_PORTS+(int(honeypot["id"])*TunnelsController.PORTS_LIMIT)+cpt,
 					dst_addr      = honeypot["device"]["ip"],
 					dst_port      = port,
 					remote_ip     = "10.0.0.2",
@@ -90,7 +90,7 @@ class TunnelsController:
 					bind_addr     = "0.0.0.0",
 					bind_port     = port,
 					dst_addr      = "127.0.0.1",
-					dst_port      = TunnelsController.EXPOSE_PORTS+(honeypot["id"]*TunnelsController.PORTS_LIMIT)+cpt,
+					dst_port      = TunnelsController.EXPOSE_PORTS+(int(honeypot["id"])*TunnelsController.PORTS_LIMIT)+cpt,
 					remote_ip     = honeypot["door"]["host"],
 					key_path      = TunnelsController.DOOR_PRIV_KEY,
 					remote_origin = True
