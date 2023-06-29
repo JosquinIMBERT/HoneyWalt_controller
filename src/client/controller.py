@@ -111,12 +111,12 @@ def CustomizedClientService(server):
 		##################
 
 		def exposed_vm_shell(self):
-			return self.call(self.vm_manager.shell)
+			return self.call(self.server.vm_manager.shell)
 
 		def exposed_vm_start(self, phase):
-			return self.call(self.vm_manager.start, phase)
+			return self.call(self.server.vm_manager.start, phase)
 
 		def exposed_vm_stop(self):
-			return self.call(self.vm_manager.stop)
+			return self.call(self.server.vm_manager.stop)
 
 	return ClientService
