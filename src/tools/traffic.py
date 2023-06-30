@@ -9,13 +9,12 @@ from common.utils.logs import *
 from common.utils.system import *
 import common.utils.settings as settings
 
-class TrafficController:
+class Traffic:
 
 	LATENCY = "50usec"
 	THROUGHPUT = "10mbit"
 
 	def __init__(self, server):
-		log(INFO, "TrafficController.__init__: creating the TrafficController")
 		self.server = server
 
 	def __del__(self):
@@ -26,18 +25,18 @@ class TrafficController:
 		IP_FOR_DMZ = settings.get("IP_FOR_DMZ")
 
 		dev = "tap-out"
-		latency = TrafficController.LATENCY
-		throughput = TrafficController.THROUGHPUT
+		latency = Traffic.LATENCY
+		throughput = Traffic.THROUGHPUT
 		ports = ",".join([str(WIREGUARD_PORTS+honeypot["id"]) for honeypot in self.server.run_config["honeypots"]])
 
 		prog = to_root_path("src/script/control-up.sh")
 		args = dev+" "+IP_FOR_DMZ+" "+latency+" "+throughput+" "+ports
 		command = prog+" "+args
 		if not run(command):
-			log(ERROR, "TrafficController.start_control: failed to start traffic control")
+			log(ERROR, "Traffic.start_control: failed to start traffic control")
 
 	def stop_control(self):
 		prog = to_root_path("src/script/control-down.sh")
 		command = prog+" tap-out"
 		if not run(command):
-			log(ERROR,"TrafficController.stop_control: failed to stop traffic control")
+			log(ERROR,"Traffic.stop_control: failed to stop traffic control")

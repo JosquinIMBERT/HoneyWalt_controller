@@ -90,6 +90,9 @@ class StateManager:
 		log(INFO, "starting doors firewalls")
 		self.server.doors.firewall_up()
 
+		# Start VM Firewall
+		log(INFO, "starting VM firewall")
+		self.server.vm.firewall_up()
 
 		#####################
 		#	  WIREGUARD 	#
@@ -238,6 +241,8 @@ class StateManager:
 		self.server.traffic.stop_control()
 		log(INFO, "stopping doors firewalls")
 		self.server.doors.firewall_down()
+		log(INFO, "stopping VM firewall")
+		self.server.vm.firewall_down()
 
 		return True
 

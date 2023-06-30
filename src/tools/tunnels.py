@@ -9,7 +9,7 @@ from common.utils.logs import *
 from common.utils.misc import *
 from common.utils.system import *
 
-class TunnelsController:
+class Tunnels:
 
 	VM_PRIV_KEY   = to_root_path("var/key/id_olim")
 	VM_PUB_KEY    = to_root_path("var/key/id_olim.pub")
@@ -21,7 +21,6 @@ class TunnelsController:
 	REAL_SSH      = 1312
 
 	def __init__(self, server):
-		log(INFO, "TunnelsController.__init__: creating the TunnelsController")
 		self.server = server
 
 	def __del__(self):
@@ -45,31 +44,31 @@ class TunnelsController:
 			self.start_tunnel(
 				socket_dir    = to_root_path("run/ssh/internal-ssh/"),
 				bind_addr     = "127.0.0.1",
-				bind_port     = TunnelsController.TUNNEL_PORTS+int(honeypot["id"]),
+				bind_port     = Tunnels.TUNNEL_PORTS+int(honeypot["id"]),
 				dst_addr      = honeypot["device"]["ip"],
 				dst_port      = 22,
 				remote_ip     = "10.0.0.2",
-				key_path      = TunnelsController.VM_PRIV_KEY,
+				key_path      = Tunnels.VM_PRIV_KEY,
 				remote_origin = False
 			)
 			# Tunnel door -> controller
 			self.start_tunnel(
 				socket_dir    = to_root_path("run/ssh/external-ssh/"),
 				bind_addr     = "127.0.0.1",
-				bind_port     = TunnelsController.TUNNEL_PORTS,
+				bind_port     = Tunnels.TUNNEL_PORTS,
 				dst_addr      = "127.0.0.1",
-				dst_port      = TunnelsController.TUNNEL_PORTS+int(honeypot["id"]),
+				dst_port      = Tunnels.TUNNEL_PORTS+int(honeypot["id"]),
 				remote_ip     = honeypot["door"]["host"],
-				key_path      = TunnelsController.DOOR_PRIV_KEY,
-				real_ssh      = TunnelsController.REAL_SSH,
+				key_path      = Tunnels.DOOR_PRIV_KEY,
+				real_ssh      = Tunnels.REAL_SSH,
 				remote_origin = True
 			)
 
 	# Start tunnels for other exposed ports
 	def start_other(self):
 		for honeypot in self.server.run_config["honeypots"]:
-			if len(honeypot["ports"]) > TunnelsController.PORTS_LIMIT:
-				log(ERROR, "We only accept "+str(TunnelsController.PORTS_LIMIT)
+			if len(honeypot["ports"]) > Tunnels.PORTS_LIMIT:
+				log(ERROR, "We only accept "+str(Tunnels.PORTS_LIMIT)
 					+" exposed ports per honeypot - honeypot "+str(honeypot["id"])
 					+"does not meet this requirement")
 				continue
@@ -79,11 +78,11 @@ class TunnelsController:
 				self.start_tunnel(
 					socket_dir    = to_root_path("run/ssh/internal-others/"),
 					bind_addr     = "127.0.0.1",
-					bind_port     = TunnelsController.EXPOSE_PORTS+(int(honeypot["id"])*TunnelsController.PORTS_LIMIT)+cpt,
+					bind_port     = Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt,
 					dst_addr      = honeypot["device"]["ip"],
 					dst_port      = port,
 					remote_ip     = "10.0.0.2",
-					key_path      = TunnelsController.VM_PRIV_KEY,
+					key_path      = Tunnels.VM_PRIV_KEY,
 					remote_origin = False
 				)
 				# Door --> Controller
@@ -92,10 +91,10 @@ class TunnelsController:
 					bind_addr     = "0.0.0.0",
 					bind_port     = port,
 					dst_addr      = "127.0.0.1",
-					dst_port      = TunnelsController.EXPOSE_PORTS+(int(honeypot["id"])*TunnelsController.PORTS_LIMIT)+cpt,
+					dst_port      = Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt,
 					remote_ip     = honeypot["door"]["host"],
-					key_path      = TunnelsController.DOOR_PRIV_KEY,
-					real_ssh      = TunnelsController.REAL_SSH,
+					key_path      = Tunnels.DOOR_PRIV_KEY,
+					real_ssh      = Tunnels.REAL_SSH,
 					remote_origin = True
 				)
 				cpt += 1

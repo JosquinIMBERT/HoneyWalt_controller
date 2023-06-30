@@ -2,19 +2,21 @@
 import argparse, signal, threading
 
 # Internal
-from client.controller import ClientController
-from common.utils.files import *
-from common.utils.logs import *
 from config import get_conf
-from door.global_controller import DoorGlobalController
-from tools.traffic import TrafficController
-from tools.tunnels import TunnelsController
 
+from tools.traffic import Traffic
+from tools.tunnels import Tunnels
 from tools.honeypot import HoneypotManager
 from tools.state import StateManager
 from tools.vm import VMManager
 
+from client.controller import ClientController
+from door.global_controller import DoorGlobalController
 from vm.controller import VMController
+
+# Common
+from common.utils.files import *
+from common.utils.logs import *
 
 server = None
 
@@ -26,21 +28,32 @@ def handle(signum, frame):
 class ControllerServer:
 	"""ControllerServer"""
 	def __init__(self):
-		log(INFO, "ControllerServer.__init__: creating the ControllerServer")
-		
-		self.doors    = DoorGlobalController(self)
-		self.vm       = VMController(self)
-		self.client   = ClientController(self)
-		self.tunnels  = TunnelsController(self)
-		self.traffic  = TrafficController(self)
-		
+		log(INFO, "ControllerServer: building the door global controller")
+		self.doors = DoorGlobalController(self)
+
+		log(INFO, "ControllerServer: building the VM controller")
+		self.vm = VMController(self)
+
+		log(INFO, "ControllerServer: building the client controller")
+		self.client = ClientController(self)
+
+		log(INFO, "ControllerServer: building the tunnels controller")
+		self.tunnels = Tunnels(self)
+
+		log(INFO, "ControllerServer: building the traffic controller")
+		self.traffic = Traffic(self)
+
+		log(INFO, "ControllerServer: building the honeypots manager")
 		self.honeypot_manager = HoneypotManager(self)
-		self.state_manager    = StateManager(self)
-		self.vm_manager       = VMManager(self)
+
+		log(INFO, "ControllerServer: building the state manager")
+		self.state_manager = StateManager(self)
+
+		log(INFO, "ControllerServer: building the VM manager")
+		self.vm_manager = VMManager(self)
 
 		self.edit_config = get_conf()
 		self.run_config  = {}
-
 		self.need_commit = False
 
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C

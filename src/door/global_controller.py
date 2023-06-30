@@ -10,7 +10,6 @@ from door.controller import DoorController
 
 class DoorGlobalController:
 	def __init__(self, server):
-		log(INFO, "DoorGlobalController.__init__: creating the DoorGlobalController")
 		self.server = server
 		self.controllers = {}
 

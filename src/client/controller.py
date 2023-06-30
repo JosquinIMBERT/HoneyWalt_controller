@@ -13,7 +13,6 @@ class ClientController():
 	CLIENT_PORT = 9999
 
 	def __init__(self, server):
-		log(INFO, "Creating the ClientController")
 		self.server = server
 
 	def __del__(self):
