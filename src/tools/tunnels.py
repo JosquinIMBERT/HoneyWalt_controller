@@ -22,6 +22,10 @@ class Tunnels:
 
 	def __init__(self, server):
 		self.server = server
+		self.internal_ssh_tunnels   = []
+		self.external_ssh_tunnels   = []
+		self.internal_other_tunnels = []
+		self.external_other_tunnels = []
 
 	def __del__(self):
 		pass
@@ -41,28 +45,27 @@ class Tunnels:
 	def start_ssh(self):
 		for honeypot in self.server.run_config["honeypots"]:
 			# Tunnel controller -> device
-			self.start_tunnel(
-				socket_dir    = to_root_path("run/ssh/internal-ssh/"),
-				bind_addr     = "127.0.0.1",
-				bind_port     = Tunnels.TUNNEL_PORTS+int(honeypot["id"]),
-				dst_addr      = honeypot["device"]["ip"],
-				dst_port      = 22,
-				remote_ip     = "10.0.0.2",
-				key_path      = Tunnels.VM_PRIV_KEY,
-				remote_origin = False
+			internal_tunnel = SSHTunnelForwarder(
+				ssh_address         = '10.0.0.2',
+				ssh_port            = 22,
+				ssh_username        = "root",
+				ssh_private_key     = Tunnels.VM_PRIV_KEY,
+				local_bind_address  = ("127.0.0.1", Tunnels.TUNNEL_PORTS+int(honeypot["id"])),
+				remote_bind_address = (honeypot["device"]["ip"], 22)
 			)
+			self.internal_ssh_tunnels += [internal_tunnel]
 			# Tunnel door -> controller
-			self.start_tunnel(
-				socket_dir    = to_root_path("run/ssh/external-ssh/"),
-				bind_addr     = "127.0.0.1",
-				bind_port     = Tunnels.TUNNEL_PORTS,
-				dst_addr      = "127.0.0.1",
-				dst_port      = Tunnels.TUNNEL_PORTS+int(honeypot["id"]),
-				remote_ip     = honeypot["door"]["host"],
-				key_path      = Tunnels.DOOR_PRIV_KEY,
-				real_ssh      = Tunnels.REAL_SSH,
-				remote_origin = True
+			external_tunnel = SSHTunnelForwarder(
+				ssh_address         = honeypot["door"]["host"],
+				ssh_port            = Tunnels.REAL_SSH,
+				ssh_username        = "root",
+				ssh_private_key     = Tunnels.DOOR_PRIV_KEY,
+				local_bind_address  = ("127.0.0.1", Tunnels.TUNNEL_PORTS+int(honeypot["id"])),
+				remote_bind_address = ("127.0.0.1", Tunnels.TUNNEL_PORTS)
 			)
+			self.external_ssh_tunnels += [external_tunnel]
+			internal_tunnel.start()
+			external_tunnel.start()
 
 	# Start tunnels for other exposed ports
 	def start_other(self):
