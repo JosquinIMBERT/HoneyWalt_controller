@@ -155,10 +155,10 @@ class Tunnels:
 
 		try: pid = int(pid)
 		except: return None
-		else: return pid
+		else: return pid_file
 
-	def _stop_tunnel(self, pid):
-		try: run("kill "+str(pid))
+	def _stop_tunnel(self, pid_file):
+		try: kill_from_file(pid_file)
 		except: pass
 
 
