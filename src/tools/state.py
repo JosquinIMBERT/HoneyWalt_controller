@@ -45,13 +45,6 @@ class StateManager:
 
 
 		#####################
-		#	   CLEAN UP 	#
-		#####################
-
-		self.server.tunnels.init_run()
-
-
-		#####################
 		#		VM BOOT		#
 		#####################
 

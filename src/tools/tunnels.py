@@ -1,13 +1,9 @@
 # External
 from sshtunnel import SSHTunnelForwarder
-from string import Template
-import tempfile
 
 # Common
 from common.utils.files import *
 from common.utils.logs import *
-from common.utils.misc import *
-from common.utils.system import *
 
 class Tunnels:
 
@@ -30,12 +26,6 @@ class Tunnels:
 	def __del__(self):
 		pass
 
-	def init_run(self):
-		delete(to_root_path("run/ssh/external-others"), suffix=".pid")
-		delete(to_root_path("run/ssh/internal-others"), suffix=".pid")
-		delete(to_root_path("run/ssh/external-ssh"), suffix=".pid")
-		delete(to_root_path("run/ssh/internal-ssh"), suffix=".pid")
-
 
 	#######################
 	#	 START TUNNELS	  #
@@ -53,7 +43,6 @@ class Tunnels:
 				local_bind_address  = ("127.0.0.1", Tunnels.TUNNEL_PORTS+int(honeypot["id"])),
 				remote_bind_address = (honeypot["device"]["ip"], 22)
 			)
-			self.internal_ssh_tunnels += [internal_tunnel]
 			# Tunnel door -> controller
 			external_tunnel = SSHTunnelForwarder(
 				ssh_address         = honeypot["door"]["host"],
@@ -63,6 +52,7 @@ class Tunnels:
 				local_bind_address  = ("127.0.0.1", Tunnels.TUNNEL_PORTS+int(honeypot["id"])),
 				remote_bind_address = ("127.0.0.1", Tunnels.TUNNEL_PORTS)
 			)
+			self.internal_ssh_tunnels += [internal_tunnel]
 			self.external_ssh_tunnels += [external_tunnel]
 			internal_tunnel.start()
 			external_tunnel.start()
@@ -71,35 +61,34 @@ class Tunnels:
 	def start_other(self):
 		for honeypot in self.server.run_config["honeypots"]:
 			if len(honeypot["ports"]) > Tunnels.PORTS_LIMIT:
-				log(ERROR, "We only accept "+str(Tunnels.PORTS_LIMIT)
+				log(WARNING, "We only accept "+str(Tunnels.PORTS_LIMIT)
 					+" exposed ports per honeypot - honeypot "+str(honeypot["id"])
 					+"does not meet this requirement")
 				continue
 			cpt = 0
 			for port in honeypot["ports"]:
 				# Controller --> Device
-				self.start_tunnel(
-					socket_dir    = to_root_path("run/ssh/internal-others/"),
-					bind_addr     = "127.0.0.1",
-					bind_port     = Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt,
-					dst_addr      = honeypot["device"]["ip"],
-					dst_port      = port,
-					remote_ip     = "10.0.0.2",
-					key_path      = Tunnels.VM_PRIV_KEY,
-					remote_origin = False
+				internal_tunnel = SSHTunnelForwarder(
+					ssh_address         = "10.0.0.2",
+					ssh_port            = 22,
+					ssh_username        = "root",
+					ssh_private_key     = Tunnels.VM_PRIV_KEY,
+					local_bind_address  = ("127.0.0.1", Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt),
+					remote_bind_address = (honeypot["device"]["ip"], port)
 				)
 				# Door --> Controller
-				self.start_tunnel(
-					socket_dir    = to_root_path("run/ssh/external-others/"),
-					bind_addr     = "0.0.0.0",
-					bind_port     = port,
-					dst_addr      = "127.0.0.1",
-					dst_port      = Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt,
-					remote_ip     = honeypot["door"]["host"],
-					key_path      = Tunnels.DOOR_PRIV_KEY,
-					real_ssh      = Tunnels.REAL_SSH,
-					remote_origin = True
+				external_tunnel = SSHTunnelForwarder(
+					ssh_address         = honeypot["door"]["host"],
+					ssh_port            = Tunnels.REAL_SSH,
+					ssh_username        = "root",
+					ssh_private_key     = Tunnels.DOOR_PRIV_KEY,
+					local_bind_address  = ("127.0.0.1", Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt),
+					remote_bind_address = ("0.0.0.0", port)
 				)
+				self.internal_other_tunnels += [internal_tunnel]
+				self.external_other_tunnels += [external_tunnel]
+				internal_tunnel.start()
+				external_tunnel.start()
 				cpt += 1
 
 
@@ -109,68 +98,21 @@ class Tunnels:
 
 	# For additional ports (not ssh)
 	def stop_other(self):
-		self.stop_tunnels("external-others")
-		self.stop_tunnels("internal-others")
+		for external_tunnel in self.external_other_tunnels:
+			external_tunnel.stop()
+		for internal_tunnel in self.internal_other_tunnels:
+			internal_tunnel.stop()
+		self.external_other_tunnels = []
+		self.internal_other_tunnels = []
 
 	def stop_ssh(self):
-		self.stop_tunnels("external-ssh")
-		self.stop_tunnels("internal-ssh")
+		for external_tunnel in self.external_ssh_tunnels:
+			external_tunnel.stop()
+		for internal_tunnel in self.internal_ssh_tunnels:
+			internal_tunnel.stop()
+		self.external_ssh_tunnels = []
+		self.internal_ssh_tunnels = []
 
-	def stop(self):
+	def stop_tunnels(self):
 		self.stop_other()
 		self.stop_ssh()
-
-
-	#######################
-	#   START UTILITIES   #
-	#######################
-
-	def gen_sock_filename(self, socket_dir):
-		# Warning: using a __deprecated__ function
-		# May need to be changed, but I think the ssh
-		# command expects that the file does not exist
-		socketfile = tempfile.mktemp(".sock", "", dir=socket_dir)
-		try:
-			os.remove(socketfile)
-		except OSError:
-			pass
-		return socketfile
-
-	def start_tunnel(self, socket_dir, bind_addr, bind_port, dst_addr, dst_port, remote_ip, key_path, real_ssh=22, remote_origin=True):
-		origin = "-R" if remote_origin else "-L"
-		socket = self.gen_sock_filename(socket_dir)
-
-		tunnel_template = Template("ssh -f -N -M -S ${socket} \
-			${origin} ${bind_addr}:${bind_port}:${dst_addr}:${dst_port} \
-			root@${remote_ip} \
-			-p ${real_ssh} \
-			-i ${key_path}")
-
-		tunnel_command = tunnel_template.substitute({
-			"socket"    : socket,
-			"origin"    : origin,
-			"bind_addr" : bind_addr,
-			"bind_port" : bind_port,
-			"dst_addr"  : dst_addr,
-			"dst_port"  : dst_port,
-			"remote_ip" : remote_ip,
-			"real_ssh"  : real_ssh,
-			"key_path"  : key_path
-		})
-
-		if not run(tunnel_command):
-			log(ERROR, "failed to create a tunnel")
-
-
-	#######################
-	#   STOP UTILITIES    #
-	#######################
-
-	def stop_tunnels(self, directory):
-		path = to_root_path("run/ssh/"+directory)
-		for killpath in os.listdir(path):
-			if killpath.endswith(".sock"):
-				try:
-					kill_from_file(os.path.join(path, killpath), filetype="ssh")
-				except:
-					log(WARNING, "Failed to close a SSH tunnel. The control socket is: "+str(killpath))
