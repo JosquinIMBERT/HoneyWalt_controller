@@ -55,7 +55,8 @@ class DoorController():
 		self.background_service = rpyc.BgServingThread(self.conn)
 
 	def __del__(self):
-		self.background_service.stop()
+		if self.background_service:
+			self.background_service.stop()
 		del self.timeout
 		del self.conn
 
