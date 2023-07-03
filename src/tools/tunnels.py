@@ -140,7 +140,7 @@ class Tunnels:
 
 		command = template.substitute({
 			"pid_file" : pid_file,
-			"origin"   : origin
+			"origin"   : origin,
 			"src_addr" : src_addr,
 			"src_port" : src_port,
 			"dst_addr" : dst_addr,
