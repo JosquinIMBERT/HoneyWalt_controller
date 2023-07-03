@@ -7,12 +7,13 @@ import argparse, os, select, socket, sys, threading, time
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
-import common.utils.settings as settings
 
 class Traffic:
 
 	LATENCY = "50usec"
 	THROUGHPUT = "10mbit"
+	WIREGUARD_PORTS = 6000
+	INTERNAL_IP = "10.0.0.1"
 
 	def __init__(self, server):
 		self.server = server
@@ -21,16 +22,13 @@ class Traffic:
 		pass
 
 	def start_control(self):
-		WIREGUARD_PORTS = settings.get("WIREGUARD_PORTS")
-		IP_FOR_DMZ = settings.get("IP_FOR_DMZ")
-
 		dev = "tap-out"
 		latency = Traffic.LATENCY
 		throughput = Traffic.THROUGHPUT
-		ports = ",".join([str(WIREGUARD_PORTS+honeypot["id"]) for honeypot in self.server.run_config["honeypots"]])
+		ports = ",".join([str(Traffic.WIREGUARD_PORTS+honeypot["id"]) for honeypot in self.server.run_config["honeypots"]])
 
 		prog = to_root_path("src/script/control-up.sh")
-		args = dev+" "+IP_FOR_DMZ+" "+latency+" "+throughput+" "+ports
+		args = dev+" "+Traffic.INTERNAL_IP+" "+latency+" "+throughput+" "+ports
 		command = prog+" "+args
 		if not run(command):
 			log(ERROR, "Traffic.start_control: failed to start traffic control")

@@ -4,7 +4,6 @@ import os, sys
 # Internal
 from common.utils.logs import *
 from common.utils.misc import *
-import common.utils.settings as settings
 
 from door.controller import DoorController
 

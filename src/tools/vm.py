@@ -4,9 +4,11 @@ import os, re, sys, time
 # Internal
 from common.utils.logs import *
 from common.utils.rpc import FakeClient
-import common.utils.settings as settings
 
 class VMManager:
+
+	VM_IP = "10.0.0.2"
+
 	def __init__(self, server):
 		self.server = server
 
@@ -21,7 +23,7 @@ class VMManager:
 			res = {}
 			if self.server.vm.phase != 1:
 				client.log(WARNING, "the VM is in run mode. Your modifications will be lost after reboot and an attacker could infect the VM")
-			res["ip"] = settings.get("VM_IP")
+			res["ip"] = VMManager.VM_IP
 			with open(to_root_path("var/key/id_olim"), "r") as keyfile:
 				res["key"] = keyfile.read()
 			return res

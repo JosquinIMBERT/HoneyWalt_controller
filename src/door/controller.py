@@ -9,7 +9,6 @@ from common.utils.misc import get_public_ip
 from common.utils.rpc import IPService
 from common.utils.sockets import ClientSocket
 from tools.shaper import ControllerShaper
-import common.utils.settings as settings
 
 class ControllerService(IPService):
 	def __init__(self):
@@ -25,6 +24,7 @@ class ControllerService(IPService):
 
 class DoorController():
 
+	WIREGUARD_PORTS = 6000
 	DOOR_PORT = 5556
 
 	def __init__(self, server, honeypot, timeout=10):
@@ -36,7 +36,7 @@ class DoorController():
 		
 		self.server = server
 		self.timeout = timeout
-		self.shaper = ControllerShaper(settings.get("WIREGUARD_PORTS")+self.honeyid)
+		self.shaper = ControllerShaper(DoorController.WIREGUARD_PORTS+self.honeyid)
 		self.shaper.set_peer(self)
 		
 		# RPyC connection to the door

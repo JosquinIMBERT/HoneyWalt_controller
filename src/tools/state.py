@@ -6,7 +6,6 @@ from config import *
 from common.utils.logs import *
 from common.utils.misc import *
 from common.utils.rpc import FakeClient
-import common.utils.settings as settings
 
 
 class StateManager:
