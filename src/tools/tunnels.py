@@ -7,9 +7,6 @@ from common.utils.files import *
 from common.utils.logs import *
 from common.utils.system import *
 
-# We use sshtunnel for local port forwarding (i.e. tunnels like the one we open with -L ssh option)
-# We use autossh for remote port forwarding (i.e. tunnels like the one we open with -R ssh option)
-
 class Tunnels:
 
 	VM_PRIV_KEY   = to_root_path("var/key/id_olim")
@@ -42,19 +39,25 @@ class Tunnels:
 			local_port = Tunnels.TUNNEL_PORTS+int(honeypot["id"])
 
 			# Tunnel controller -> device
-			internal_tunnel = SSHTunnelForwarder(
-				ssh_address         = '10.0.0.2',
-				ssh_port            = 22,
-				ssh_username        = "root",
-				ssh_private_key     = Tunnels.VM_PRIV_KEY,
-				local_bind_address  = ("127.0.0.1", local_port),
-				remote_bind_address = (honeypot["device"]["ip"], 22)
+			internal_tunnel = self._start_tunnel(
+				pid_file = "internal-tunnel-"+str(local_port),
+				src_addr = "127.0.0.1",
+				src_port = local_port,
+				dst_addr = honeypot["device"]["ip"],
+				dst_port = 22,
+				host     = "10.0.0.2",
+				port     = 22,
+				user     = "root",
+				privkey  = Tunnels.VM_PRIV_KEY,
+				external = False
 			)
-			self.internal_ssh_tunnels += [internal_tunnel]
-			internal_tunnel.start()
+			if internal_tunnel:
+				self.internal_ssh_tunnels += [internal_tunnel]
+			else:
+				log(ERROR, "failed to start internal tunnel for ssh in honeypot " + str(honeypot["id"]))
 
 			# Tunnel door -> controller
-			external_tunnel = self._start_external_tunnel(
+			external_tunnel = self._start_tunnel(
 				pid_file = "external-tunnel-"+str(local_port),
 				src_addr = "127.0.0.1",
 				src_port = Tunnels.TUNNEL_PORTS,
@@ -63,12 +66,13 @@ class Tunnels:
 				host     = honeypot["door"]["host"],
 				port     = Tunnels.REAL_SSH,
 				user     = "root",
-				privkey  = Tunnels.DOOR_PRIV_KEY
+				privkey  = Tunnels.DOOR_PRIV_KEY,
+				external = True
 			)
 			if external_tunnel:
 				self.external_ssh_tunnels += [external_tunnel]
 			else:
-				log(ERROR, "failed to start external tunnel for ssh in honeypot "+ str(honeypot["id"]))
+				log(ERROR, "failed to start external tunnel for ssh in honeypot " + str(honeypot["id"]))
 
 	# Start tunnels for other exposed ports
 	def start_other(self):
@@ -83,19 +87,25 @@ class Tunnels:
 				local_port = Tunnels.EXPOSE_PORTS+(int(honeypot["id"])*Tunnels.PORTS_LIMIT)+cpt
 
 				# Controller --> Device
-				internal_tunnel = SSHTunnelForwarder(
-					ssh_address         = "10.0.0.2",
-					ssh_port            = 22,
-					ssh_username        = "root",
-					ssh_private_key     = Tunnels.VM_PRIV_KEY,
-					local_bind_address  = ("127.0.0.1", local_port),
-					remote_bind_address = (honeypot["device"]["ip"], port)
+				internal_tunnel = self._start_tunnel(
+					pid_file = "internal-tunnel-"+str(local_port),
+					src_addr = "127.0.0.1",
+					src_port = local_port,
+					dst_addr = honeypot["device"]["ip"],
+					dst_port = port,
+					host     = "10.0.0.2",
+					port     = 22,
+					user     = "root",
+					privkey  = Tunnels.VM_PRIV_KEY,
+					external = False
 				)
-				self.internal_other_tunnels += [internal_tunnel]
-				internal_tunnel.start()
+				if internal_tunnel:
+					self.internal_other_tunnels += [internal_tunnel]
+				else:
+					log(ERROR, "failed to start internal tunnel for port " + str(port) + " in honeypot " + str(honeypot["id"]))
 
 				# Door --> Controller
-				external_tunnel = self._start_external_tunnel(
+				external_tunnel = self._start_tunnel(
 					pid_file = "external-tunnel-"+str(local_port),
 					src_addr = "0.0.0.0",
 					src_port = port,
@@ -104,26 +114,33 @@ class Tunnels:
 					host     = honeypot["door"]["host"],
 					port     = Tunnels.REAL_SSH,
 					user     = "root",
-					privkey  = Tunnels.DOOR_PRIV_KEY
+					privkey  = Tunnels.DOOR_PRIV_KEY,
+					external = True
 				)
 				if external_tunnel:
 					self.external_other_tunnels += [external_tunnel]
 				else:
-					log(ERROR, "failed to start external tunnel for port " + str(port) + " in honeypot "+ str(honeypot["id"]))
+					log(ERROR, "failed to start external tunnel for port " + str(port) + " in honeypot " + str(honeypot["id"]))
 
 				cpt += 1
 
-	def _start_external_tunnel(self, pid_file, src_addr, src_port, dst_addr, dst_port, user, host, port, privkey):
+	def _start_tunnel(self, pid_file, src_addr, src_port, dst_addr, dst_port, user, host, port, privkey, external):
 		pid_file = to_root_path("run/tunnel/"+str(pid_file))
+
+		if external:
+			origin = "-R"
+		else:
+			origin = "-L"
 
 		template = Template("export AUTOSSH_PIDFILE='${pid_file}'; \
 			autossh -M 0 -f -N \
-			-R ${src_addr}:${src_port}:${dst_addr}:${dst_port} \
+			${origin} ${src_addr}:${src_port}:${dst_addr}:${dst_port} \
 			${user}@${host} -p ${port} -i ${privkey}; \
 			cat ${pid_file}")
 
 		command = template.substitute({
 			"pid_file" : pid_file,
+			"origin"   : origin
 			"src_addr" : src_addr,
 			"src_port" : src_port,
 			"dst_addr" : dst_addr,
@@ -140,7 +157,7 @@ class Tunnels:
 		except: return None
 		else: return pid
 
-	def _stop_external_tunnel(self, pid):
+	def _stop_tunnel(self, pid):
 		try: run("kill "+str(pid))
 		except: pass
 
@@ -152,17 +169,17 @@ class Tunnels:
 	# For additional ports (not ssh)
 	def stop_other(self):
 		for external_tunnel in self.external_other_tunnels:
-			self._stop_external_tunnel(external_tunnel)
+			self._stop_tunnel(external_tunnel)
 		for internal_tunnel in self.internal_other_tunnels:
-			internal_tunnel.stop()
+			self._stop_tunnel(internal_tunnel)
 		self.external_other_tunnels = []
 		self.internal_other_tunnels = []
 
 	def stop_ssh(self):
 		for external_tunnel in self.external_ssh_tunnels:
-			self._stop_external_tunnel(external_tunnel)
+			self._stop_tunnel(external_tunnel)
 		for internal_tunnel in self.internal_ssh_tunnels:
-			internal_tunnel.stop()
+			self._stop_tunnel(internal_tunnel)
 		self.external_ssh_tunnels = []
 		self.internal_ssh_tunnels = []
 
