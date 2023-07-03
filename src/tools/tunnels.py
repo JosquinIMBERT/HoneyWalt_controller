@@ -114,6 +114,8 @@ class Tunnels:
 				cpt += 1
 
 	def _start_external_tunnel(self, pid_file, src_addr, src_port, dst_addr, dst_port, user, host, port, privkey):
+		pid_file = to_root_path("run/tunnel/"+str(pid_file))
+
 		template = Template("export AUTOSSH_PIDFILE='${pid_file}'; \
 			autossh -M 0 -f -N \
 			-R ${src_addr}:${src_port}:${dst_addr}:${dst_port} \
