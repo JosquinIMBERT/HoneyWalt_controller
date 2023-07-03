@@ -57,7 +57,7 @@ class Tunnels:
 			external_tunnel = self._start_external_tunnel(
 				pid_file = "external-tunnel-"+str(local_port),
 				src_addr = "127.0.0.1",
-				srd_port = Tunnels.TUNNEL_PORTS,
+				src_port = Tunnels.TUNNEL_PORTS,
 				dst_addr = "127.0.0.1",
 				dst_port = local_port,
 				host     = honeypot["door"]["host"],
@@ -98,7 +98,7 @@ class Tunnels:
 				external_tunnel = self._start_external_tunnel(
 					pid_file = "external-tunnel-"+str(local_port),
 					src_addr = "0.0.0.0",
-					srd_port = port,
+					src_port = port,
 					dst_addr = "127.0.0.1",
 					dst_port = local_port,
 					host     = honeypot["door"]["host"],
