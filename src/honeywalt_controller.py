@@ -76,7 +76,7 @@ class ControllerServer:
 		else:
 			log(INFO, "ControllerServer.stop: vm controller successfully stopped")
 
-		try: self.tunnels.stop()
+		try: self.tunnels.stop_tunnels()
 		except Exception as err:
 			log(ERROR, "ControllerServer.stop: failed to stop the tunnels controller")
 			log(ERROR, "ControllerServer.stop:", err)
