@@ -16,7 +16,7 @@ class ClientController():
 		self.server = server
 
 	def __del__(self):
-		log(INFO, "Deleting the ClientController")
+		pass
 
 	def start(self):
 		authenticator = SSLAuthenticator(
