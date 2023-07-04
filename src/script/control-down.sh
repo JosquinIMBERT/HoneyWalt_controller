@@ -47,6 +47,8 @@ iptables -t mangle -P OUTPUT ACCEPT
 iptables -t mangle -P POSTROUTING ACCEPT
 
 # TC
-if [ "$(tc qdisc show dev $dev root | grep pfifo_fast)" = "" ]; then
-	tc qdisc delete dev $dev root
+if [ "$(tc qdisc show | grep "$dev")" != "" ]; then # Device exists
+	if [ "$(tc qdisc show dev $dev root | grep pfifo_fast)" = "" ]; then # Control is on
+		tc qdisc delete dev $dev root
+	fi
 fi
