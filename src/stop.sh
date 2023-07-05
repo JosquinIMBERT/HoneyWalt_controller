@@ -2,7 +2,7 @@
 
 # Usage: stop.sh [pidfile]
 
-HOME=$(realpath $(dirname "$0"))
+HOME=$(realpath $(dirname $(dirname "$0")))
 
 if [[ $# -gt 0 ]]; then
 	pidfile="$1"

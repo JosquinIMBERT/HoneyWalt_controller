@@ -2,7 +2,7 @@
 
 # Usage: start.sh <log-level> [pidfile]
 
-HOME=$(realpath $(dirname "$0"))
+HOME=$(realpath $(dirname $(dirname "$0")))
 
 if [[ $# -lt 1 ]]; then
 	echo "Usage: $0 <log-level> [pidfile]"
