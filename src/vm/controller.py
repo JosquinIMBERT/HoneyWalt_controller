@@ -63,8 +63,8 @@ class VMController(Controller):
 		# Trying soft shutdown (run shutdown command)
 		self.soft_shutdown()
 
-		# We wait at most 10 seconds, actively trying to know if the VM is still alive
-		max_wait = 10
+		# We wait at most 20 seconds, actively trying to know if the VM is still alive
+		max_wait = 20
 		one_wait = 0.5
 		waited = 0
 		while self.pid() and waited < max_wait:
