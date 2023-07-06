@@ -170,10 +170,10 @@ class VMController(Controller):
 			log(INFO, "starting vm hard shutdown")
 
 			# Trying to run "shutdown now" through ssh
-			run("ssh -o ConnectTimeout=3 root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
+			run("ssh -o ConnectTimeout=5 root@10.0.0.2 -i "+to_root_path("var/key/id_olim")+" -p 22 \"shutdown now\"")
 
-			# Giving 3 seconds for qemu process to shutdown with the VM
-			time.sleep(3)
+			# Giving 5 seconds for qemu process to shutdown with the VM
+			time.sleep(5)
 
 			try:
 				if self.pid() is not None: kill_from_file(path)
