@@ -27,7 +27,7 @@ def handle(signum, frame):
 
 class ControllerServer:
 	"""ControllerServer"""
-	def __init__(self):
+	def __init__(self, ip_white_list=[]):
 		log(INFO, "ControllerServer: building the door global controller")
 		self.doors = DoorGlobalController(self)
 
@@ -41,7 +41,7 @@ class ControllerServer:
 		self.tunnels = Tunnels(self)
 
 		log(INFO, "ControllerServer: building the traffic controller")
-		self.traffic = Traffic(self)
+		self.traffic = Traffic(self, ip_white_list=ip_white_list)
 
 		log(INFO, "ControllerServer: building the honeypots manager")
 		self.honeypot_manager = HoneypotManager(self)
@@ -101,6 +101,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='HoneyWalt Controller Daemon')
 	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
 	parser.add_argument("-p", "--pid-file", nargs=1, help="Select a PID file")
+	parser.add_argument("-w", "--ip-white-list", nargs=1, help="Select IPs to accept SSH connections from")
 
 	options = parser.parse_args()
 
@@ -108,6 +109,7 @@ if __name__ == '__main__':
 	if options.log_level is not None:
 		log_level = options.log_level[0]
 		set_log_level(log_level)
+	log(INFO, "Using log level: "+str(get_log_level()))
 
 	# PID file
 	if options.pid_file is not None:
@@ -117,8 +119,26 @@ if __name__ == '__main__':
 		if path.parent.exists():
 			with open(pid_file_path, "w") as pid_file:
 				pid_file.write(str(os.getpid()))
+		log(INFO, "Using pid file: "+str(pid_file_path))
+
+	# IP White List (from arguments)
+	args_ips = []
+	if options.ip_white_list is not None:
+		args_ips = options.ip_white_list[0].split(",")
+
+	# IP White List (from file)
+	file_ips = []
+	white_list_filepath = to_root_path("etc/whitelist.txt")
+	if isfile(white_list_filepath):
+		with open(white_list_filepath, "r") as white_list_file:
+			file_ips = ",".join(white_list_file.read().split()).split(",")
+
+	# IP White List (final)
+	ip_white_list = args_ips + file_ips
+
+	log(INFO, "Using whitelist: "+str(ip_white_list))
 
 	threading.current_thread().name = "MainThread"
 
-	server = ControllerServer()
+	server = ControllerServer(ip_white_list=ip_white_list)
 	server.start()

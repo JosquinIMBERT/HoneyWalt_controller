@@ -4,13 +4,14 @@
 ###      INPUT      ###
 #######################
 
-if [[ $# != 5 ]]; then
-	echo "Usage: $0 <dev> <addr> <latency> <throughput> <ports>"
+if [[ $# -lt 5 ]]; then
+	echo "Usage: $0 <dev> <addr> <latency> <throughput> <ports> [whitelist]"
 	echo -e "\tdev: the device (network interface)"
 	echo -e "\taddr: the address of the controller on the DMZ side"
 	echo -e "\tlatency: latency to which the traffic should be limited on the given ports"
 	echo -e "\tthroughput: throughput to which the traffic should be limited on the given ports"
 	echo -e "\tports: the ports on which the traffic should be limited"
+	echo -e "\twhitelist: the list of IP addresses to accept SSH connections from"
 	exit 1
 fi
 
@@ -34,6 +35,11 @@ if [ "$port_min" = "$port_max" ]; then
 	port_range=$port_min
 else
 	port_range="$port_min:$port_max"
+fi
+
+whitelist=""
+if [[ $# -gt 5 ]]; then
+	whitelist=$6
 fi
 
 
@@ -74,6 +80,11 @@ iptables -t mangle -P POSTROUTING ACCEPT
 iptables -A PREROUTING -t mangle -p udp -d $addr_dmz_side --dport $port_range -j ACCEPT
 iptables -A PREROUTING -t mangle -p tcp	-m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A PREROUTING -t mangle -d 127.0.0.1 -i lo -j ACCEPT
+
+if [ "${whitelist}" != "" ]; then
+	iptables -A PREROUTING -t mangle -s ${whitelist} -j ACCEPT
+fi
+
 iptables -t mangle -P PREROUTING DROP
 
 
