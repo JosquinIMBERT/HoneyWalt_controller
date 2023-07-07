@@ -202,6 +202,6 @@ class Tunnels:
 	def verify_known_host(self, host, port=None):
 		port = Tunnels.REAL_SSH if port is None else port
 		# Use: ssh-keygen -H -F '[host]:port' to check if we already know host:port
-		res = run("ssh-keygen -H -F '["+host+"]:"+str(port), output=True)
+		res = run("ssh-keygen -H -F '["+host+"]:"+str(port)+"'", output=True)
 		if res == "": return False
 		return True
