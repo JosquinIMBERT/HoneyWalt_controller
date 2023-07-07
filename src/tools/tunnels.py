@@ -49,7 +49,8 @@ class Tunnels:
 				port     = 22,
 				user     = "root",
 				privkey  = Tunnels.VM_PRIV_KEY,
-				external = False
+				external = False,
+				ignore_unknown_host = True
 			)
 			if internal_tunnel:
 				self.internal_ssh_tunnels += [internal_tunnel]
@@ -97,7 +98,8 @@ class Tunnels:
 					port     = 22,
 					user     = "root",
 					privkey  = Tunnels.VM_PRIV_KEY,
-					external = False
+					external = False,
+					ignore_unknown_host = True
 				)
 				if internal_tunnel:
 					self.internal_other_tunnels += [internal_tunnel]
@@ -124,7 +126,7 @@ class Tunnels:
 
 				cpt += 1
 
-	def _start_tunnel(self, pid_file, src_addr, src_port, dst_addr, dst_port, user, host, port, privkey, external):
+	def _start_tunnel(self, pid_file, src_addr, src_port, dst_addr, dst_port, user, host, port, privkey, external, ignore_unknown_host=False):
 		pid_file = to_root_path("run/tunnel/"+str(pid_file))
 
 		if external:
@@ -132,8 +134,13 @@ class Tunnels:
 		else:
 			origin = "-L"
 
+		if ignore_unknown_host:
+			option = "-o StrictHostKeyChecking=no"
+		else:
+			option = ""
+
 		template = Template("export AUTOSSH_PIDFILE='${pid_file}'; \
-			autossh -M 0 -f -N \
+			autossh -M 0 -f -N ${option} \
 			${origin} ${src_addr}:${src_port}:${dst_addr}:${dst_port} \
 			${user}@${host} -p ${port} -i ${privkey}; \
 			cat ${pid_file}")
@@ -186,3 +193,14 @@ class Tunnels:
 	def stop_tunnels(self):
 		self.stop_other()
 		self.stop_ssh()
+
+
+	#######################
+	# VERIFY KNOWN HOSTS  #
+	#######################
+
+	def verify_known_host(self, host, port=Tunnels.REAL_SSH):
+		# Use: ssh-keygen -H -F '[host]:port' to check if we already know host:port
+		res = run("ssh-keygen -H -F '["+host+"]:"+str(port), output=True)
+		if res == "": return False
+		return True

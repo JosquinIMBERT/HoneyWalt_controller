@@ -44,6 +44,18 @@ class StateManager:
 
 
 		#####################
+		# CHECK KNOWN HOSTS #
+		#####################
+
+		fail = False
+		for honeypot in self.server.run_config["honeypots"]:
+			if not self.server.tunnels.verify_known_host(honeypot["door"]["host"]):
+				client.log(ERROR, "please add "+str(honeypot["door"]["host"])+" to controller's ssh known hosts before to start")
+				fail = True
+		if fail: return None
+
+
+		#####################
 		#		VM BOOT		#
 		#####################
 
